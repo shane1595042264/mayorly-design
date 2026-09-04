@@ -19,8 +19,20 @@ Lives in `assets/lib/validate.mjs`, vendored into the workshop with `sync:check`
 ### CI is read-only so fork PRs work
 Validation needs no secrets. Failure detail goes to the job summary rather than a PR comment. **Why:** this sidesteps the `pull_request_target` footgun entirely. A fork PR cannot comment back, but it does not need to, because the summary and the failing check carry the reason.
 
-### The manifest is checked in CI, not committed by a bot
-**Why:** a bot pushing to a protected branch needs an app token and can retrigger workflows. Requiring the submitter to include a fresh manifest avoids both.
+### The manifest is never committed. It is generated at publish and attached to a Release
+**Superseded the same day.** The first version had CI check a committed manifest, which **deadlocked every submission**: an artist's PR adds art but no fresh manifest, so the check failed 100% of PRs. Generating at publish removes the check, the bot-push-to-protected-branch problem, and the distribution problem together.
+
+### The game fetches two files from a GitHub Release, pinned by tag
+**Why:** unauthenticated `raw.githubusercontent.com` is 60 requests/hour per IP, and GitHub-hosted runners share Azure egress addresses, so that bucket is shared with every other anonymous consumer on the same IP. It also returns no `x-ratelimit-*` headers, so there is no warning before throttling. Releases carry no bandwidth limit at all. **For a build-time fetch the packing threshold is two files**, since one archive is one request regardless of contents.
+
+### Recommend a public assets repo
+**Why:** releases and Pages work anonymously so the game build needs no credential, CDNs become available, and every credential in the system stays write-only. **Cost, stated plainly:** every approved PNG is world-visible on merge, every open submission PR is world-visible before merge, and a character reveal is spoiled by a merged PR. If it must be private, all CDNs are out, Pages needs Enterprise Cloud to be private, and browser preview needs a proxy route. **Still the founder's call.**
+
+### One GitHub App for both writing and artist sign-in
+**Why:** "a token cannot grant additional access capabilities to a user", so an artist's token structurally cannot write to the assets repo. An OAuth App's `public_repo` scope would instead grant write across every public repo the artist can reach. Attribution keys on the numeric GitHub id, never the login, because logins get renamed.
+
+### Never `pull_request_target`
+**Why:** `actions/checkout@v7` refuses fork PR checkout under it since 2026-07-20, and since 2025-12-08 it always takes the workflow file from the default branch. Most existing blog advice on commenting from CI is now wrong. Our CI is read-only and reports through the job summary, which needs no write token at all.
 
 ### Twelve slots block the first playable build
 Listed in `assets/slots/` with `"blocks": "v0"`. **Why:** without them the game renders magenta placeholders.

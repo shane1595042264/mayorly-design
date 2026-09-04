@@ -36,6 +36,7 @@ Roughly 380KB of cited findings in [docs/research/](docs/research/), produced by
 | [tauri-macos-packaging.md](docs/research/tauri-macos-packaging.md) | signing, hotkeys, SQLite, notification limits |
 | [art-asset-packs-and-licensing.md](docs/research/art-asset-packs-and-licensing.md) | which packs are commercially safe |
 | [pixel-fonts.md](docs/research/pixel-fonts.md) | font choice, verified against the binaries |
+| [github-as-backend.md](docs/research/github-as-backend.md) | the asset pipeline mechanics, and the CI deadlock it caught |
 
 ## Ground rules
 
