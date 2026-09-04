@@ -378,6 +378,79 @@ const loadImg=file=>new Promise((res,rej)=>{
   i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('not a decodable image'));};
   i.src=u;});
 
+
+/* ============================================================
+   Real PNG chunk parser. Canvas cannot do this: its 2D pipeline
+   premultiplies alpha, so getImageData returns 0,0,0 for every
+   alpha-0 pixel no matter what the file holds. Three checks in our
+   standard are invisible to canvas and only exist down here:
+   stale RGB under transparency, colour type, and embedded ICC.
+   ============================================================ */
+const PNG_SIG=[137,80,78,71,13,10,26,10];
+const paeth=(a,b,c)=>{const p=a+b-c,pa=Math.abs(p-a),pb=Math.abs(p-b),pc=Math.abs(p-c);
+  return pa<=pb&&pa<=pc?a:pb<=pc?b:c;};
+
+async function parsePNG(file){
+  if(typeof DecompressionStream==='undefined')return{unsupported:'DecompressionStream unavailable'};
+  const buf=new Uint8Array(await file.arrayBuffer());
+  for(let i=0;i<8;i++)if(buf[i]!==PNG_SIG[i])return{error:'not a PNG (bad signature)'};
+  const dv=new DataView(buf.buffer);
+  let off=8, ihdr=null, plte=null, trns=null, idat=[], iccp=false, apng=false, srgb=false;
+  while(off+8<=buf.length){
+    const len=dv.getUint32(off), type=String.fromCharCode(buf[off+4],buf[off+5],buf[off+6],buf[off+7]);
+    const body=off+8;
+    if(type==='IHDR')ihdr={w:dv.getUint32(body),h:dv.getUint32(body+4),depth:buf[body+8],
+      color:buf[body+9],interlace:buf[body+12]};
+    else if(type==='PLTE')plte=buf.subarray(body,body+len);
+    else if(type==='tRNS')trns=buf.subarray(body,body+len);
+    else if(type==='IDAT')idat.push(buf.subarray(body,body+len));
+    else if(type==='iCCP')iccp=true;
+    else if(type==='sRGB')srgb=true;
+    else if(type==='acTL')apng=true;
+    else if(type==='IEND')break;
+    off=body+len+4;
+  }
+  if(!ihdr)return{error:'no IHDR chunk'};
+  const meta={...ihdr,iccp,apng,srgb,trns:!!trns};
+  if(ihdr.depth!==8||ihdr.interlace!==0)return{meta,noPixels:'bit depth '+ihdr.depth+', interlace '+ihdr.interlace};
+
+  const total=idat.reduce((n,c)=>n+c.length,0), z=new Uint8Array(total);
+  let q=0; for(const c of idat){z.set(c,q);q+=c.length;}
+  let raw;
+  try{
+    const ds=new DecompressionStream('deflate');
+    const ab=await new Response(new Blob([z]).stream().pipeThrough(ds)).arrayBuffer();
+    raw=new Uint8Array(ab);
+  }catch(e){return{meta,noPixels:'inflate failed'};}
+
+  const CH={0:1,2:3,3:1,4:2,6:4}[ihdr.color];
+  if(!CH)return{meta,noPixels:'colour type '+ihdr.color};
+  const bpp=CH, stride=ihdr.w*bpp, out=new Uint8Array(ihdr.h*stride);
+  let pos=0;
+  for(let y=0;y<ihdr.h;y++){
+    const ft=raw[pos++], line=y*stride, prev=line-stride;
+    for(let x=0;x<stride;x++){
+      const rv=raw[pos+x], a=x>=bpp?out[line+x-bpp]:0, b=y>0?out[prev+x]:0,
+            c=(x>=bpp&&y>0)?out[prev+x-bpp]:0;
+      out[line+x]=(ft===0?rv:ft===1?rv+a:ft===2?rv+b:ft===3?rv+((a+b)>>1):rv+paeth(a,b,c))&255;
+    }
+    pos+=stride;
+  }
+  /* expand to true, non-premultiplied RGBA */
+  const px=new Uint8Array(ihdr.w*ihdr.h*4);
+  for(let i=0,n=ihdr.w*ihdr.h;i<n;i++){
+    const o=i*4, k=i*bpp;
+    if(ihdr.color===6){px[o]=out[k];px[o+1]=out[k+1];px[o+2]=out[k+2];px[o+3]=out[k+3];}
+    else if(ihdr.color===2){px[o]=out[k];px[o+1]=out[k+1];px[o+2]=out[k+2];px[o+3]=255;}
+    else if(ihdr.color===3){const j=out[k]*3;
+      px[o]=plte?plte[j]:0;px[o+1]=plte?plte[j+1]:0;px[o+2]=plte?plte[j+2]:0;
+      px[o+3]=trns&&out[k]<trns.length?trns[out[k]]:255;}
+    else if(ihdr.color===0){px[o]=px[o+1]=px[o+2]=out[k];px[o+3]=255;}
+    else {px[o]=px[o+1]=px[o+2]=out[k];px[o+3]=out[k+1];}
+  }
+  return{meta,px};
+}
+
 async function validate(file,cls){
   const spec=CLASSES[cls], want=canvasOf(spec), checks=[];
   const isPng=file.type==='image/png'||/\.png$/i.test(file.name||'');
@@ -395,19 +468,42 @@ async function validate(file,cls){
   let d;try{d=x.getImageData(0,0,W,H).data;}catch(e){
     checks.push({ok:false,lb:'Pixels readable',vl:'blocked'});return{checks,fatal:'Could not read pixels from that file.'};}
 
-  let opaque=0,semi=0,clear=0;const pal=new Map();
+  let opaque=0,semi=0,clear=0,magenta=0;const pal=new Map();
   for(let i=0;i<d.length;i+=4){
     const a=d[i+3];
     if(a===0){clear++;continue;}
     if(a<255){semi++;continue;}
     opaque++;
     const k=(d[i]<<16)|(d[i+1]<<8)|d[i+2];
+    if(k===0xFF00FF)magenta++;
     pal.set(k,(pal.get(k)||0)+1);
   }
   checks.push({ok:semi===0,lb:'Binary alpha, no soft edges',vl:semi?semi+' semi-transparent px':'clean'});
   checks.push({ok:clear>0,lb:'Has a transparent background',vl:clear?clear+' clear px':'fully opaque',soft:true});
   checks.push({ok:pal.size>0&&pal.size<=spec.colors,lb:'Colours within the cap of '+spec.colors,
     vl:pal.size?pal.size+' used':'no opaque pixels to count'});
+  /* stale RGB under an alpha-0 pixel fringes at integer upscale: invisible in
+     Aseprite, obvious in game, which is exactly why a machine has to catch it */
+  /* canvas premultiplies, so these three come from the raw PNG bytes instead */
+  const P=await parsePNG(file);
+  if(P.meta){
+    const CT={0:'greyscale',2:'RGB',3:'indexed',4:'grey+alpha',6:'RGBA'}[P.meta.color]||P.meta.color;
+    checks.push({ok:P.meta.color===6,lb:'PNG-32 (colour type 6, RGBA)',vl:CT+', '+P.meta.depth+'-bit'});
+    checks.push({ok:!P.meta.iccp,lb:'No embedded ICC profile',vl:P.meta.iccp?'iCCP present':'none'});
+    if(P.px){
+      let st=0;
+      for(let i=0;i<P.px.length;i+=4)
+        if(P.px[i+3]===0&&(P.px[i]||P.px[i+1]||P.px[i+2]))st++;
+      checks.push({ok:st===0,lb:'Transparent pixels are RGB 0,0,0',
+        vl:st?st+' px carry stale colour':'clean'});
+    } else checks.push({ok:true,soft:true,lb:'Transparent pixels are RGB 0,0,0',
+      vl:'not checked: '+(P.noPixels||'?')});
+  } else {
+    checks.push({ok:true,soft:true,lb:'Byte-level checks',vl:P.unsupported||P.error||'skipped'});
+  }
+  /* magenta is the engine's missing-asset sentinel and must never ship */
+  checks.push({ok:magenta===0,lb:'No #FF00FF (missing-asset sentinel)',
+    vl:magenta?magenta+' magenta px':'none'});
   const fill=opaque/(W*H||1);
   checks.push({ok:fill>0.03,lb:'Canvas is not blank',vl:Math.round(fill*100)+'% opaque'});
 
@@ -462,6 +558,8 @@ async function sampleFail(cls){
   g.fillRect(1,1,c.width-2,1);g.fillRect(1,c.height-2,c.width-2,1);
   g.fillRect(1,1,1,c.height-2);g.fillRect(c.width-2,1,1,c.height-2);
   g.globalAlpha=1;
+  /* and a magenta pixel, the sentinel that must never ship */
+  g.fillStyle='#FF00FF';g.fillRect(3,3,1,1);
   return toFile(c,'sample_fail.png');
 }
 </script>

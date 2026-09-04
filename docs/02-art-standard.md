@@ -20,7 +20,21 @@ Live tool with a working validator: [design/workshop.html](../design/workshop.ht
 | `ui9` | 24x24 | 1 | 8px corners | 8 | nine slice panels and frames |
 | `crop` | 16x64 | 4, vertical strip | bottom centre (8,15) | 16 | 4 stage growth from a ticked task |
 
-## Hard rules, enforced by the validator
+## Three tiers, not two
+
+The real lesson from Minecraft is not the 16x16 grid, it is the **three-tier split** it enforces. Minecraft hard-enforces a small set of machine-checkable *structural* rules, **degrades loudly rather than failing** on quality rules, and leaves *aesthetics* entirely to convention plus tooling. That is what makes its ecosystem simultaneously consistent and enormous. Full evidence in [research/minecraft-art-standard.md](research/minecraft-art-standard.md).
+
+| tier | what happens | examples |
+|---|---|---|
+| **Blocking** | rejected, never reaches a human | wrong canvas, soft alpha, over the colour cap, magenta sentinel present |
+| **Warning** | accepted and shipped, but logged and shown to the reviewer | palette drift, unusually low fill, oversized outline |
+| **Convention** | never checked, taught and reviewed by humans | light direction, silhouette, dithering, style |
+
+Getting the middle tier wrong in either direction is the failure mode. Make everything blocking and contributors quit; make nothing blocking and quality drifts.
+
+Two things Minecraft does that we explicitly do **not** copy: tolerance for off-size textures, and documented undefined behaviour on out-of-range values (its nine-slice `border >= 230` integer overflow is a bug it documents rather than fixes). We guard those.
+
+## Blocking rules, enforced by the validator
 
 A submission failing any of these is rejected before a human sees it.
 
@@ -28,12 +42,25 @@ A submission failing any of these is rejected before a human sees it.
 2. **Binary alpha.** Every pixel is fully opaque or fully transparent. No soft edges, ever. Semi-transparent pixels break atlas bleeding and read as blur at 3x zoom.
 3. **Exact canvas.** Not "about 16 wide". Exactly the size the slot names.
 4. **Colour cap per class.** Counted as distinct RGB among **fully opaque pixels only**. A transparent pixel is not a colour, and the same RGB at two alpha values is not two colours. This rule is written down because the identical file passes or fails depending on it.
-5. **No baked shadow.** The engine draws contact shadows so lighting stays consistent. A painted shadow cannot be turned off.
-6. **Frames are a vertical strip.** Frame 1 on top, height divides exactly by the frame count, no frame blank.
+5. **Transparent pixels must be RGB `0,0,0`.** Stale colour data hiding under an alpha-0 pixel causes **coloured fringing at integer upscale**. It is invisible in Aseprite and obvious in the game, which is exactly why a machine has to catch it.
+6. **`#FF00FF` never appears.** Magenta is the engine's missing-asset sentinel, drawn as a magenta and black checkerboard. Copied from Minecraft's missing texture for the same reason: shipping a gap must be impossible to miss.
+7. **No embedded ICC profile.** sRGB is assumed. A colour profile silently shifts values between Aseprite and the browser and breaks exact palette matching.
+8. **No baked shadow.** The engine draws contact shadows so lighting stays consistent. A painted shadow cannot be turned off.
+9. **Frames are a vertical strip.** Frame 1 on top, height divides exactly by the frame count, no frame blank.
+
+**Three of these are invisible to a canvas** and only exist because the validator parses the PNG bytes directly. The canvas 2D pipeline premultiplies alpha, so `getImageData` returns `0,0,0` for every alpha-0 pixel no matter what the file actually holds. A canvas-only check for stale RGB can never fail, which is worse than no check at all. Colour type and embedded ICC are likewise not exposed by canvas. The validator inflates `IDAT` and un-filters the scanlines itself.
 
 **Aseprite exports are fine.** Validation runs in the browser on decoded RGBA, so an indexed PNG carrying transparency in a `tRNS` chunk passes. Naive server-side Pillow checks report mode `P` with no `A` and reject those legitimate exports. This is a real trap and the browser sidesteps it.
 
-## Soft rules, judged by a human
+## Scale factors
+
+Every canvas above is given at scale factor `S = 1`. A higher-resolution pack multiplies every pixel number by `S`, where **`S` is 1, 2 or 4 only**. Nothing in engine code may hardcode a pixel count; positions and sizes are expressed in tiles, so one set of layout data serves every `S`.
+
+## Filenames are lowercase, and this is not cosmetic
+
+`[a-z0-9_]` only, `/` as the sole separator, no spaces, no capitals. Minecraft mandated this in 1.11 because case-insensitive macOS and Windows filesystems diverge from case-sensitive Linux CI. It is a genuine class of bug that only appears once you have a build server.
+
+## Warning rules, shipped but logged
 
 Machines reject the boring failures for free so humans only spend attention on taste.
 

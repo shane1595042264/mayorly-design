@@ -37,6 +37,8 @@ A public repo gives steps 1, 2, 4 and 7 for free. Issue forms now take real drag
 
 **The disqualifier, and it is a real one.** GitHub ToS section D.5 grants every user a licence to "use, display, perform and reproduce (by forking) Your Content." A public repo makes the sprite catalogue, which is the actual differentiator, permanently forkable by anyone including competitors. A restrictive LICENSE constrains downstream use; it does not switch off forking.
 
+**A hard constraint on the dev contract.** Unauthenticated reads including `raw.githubusercontent.com` are capped at **60 requests per hour per IP**. Fetch one manifest and one atlas per build. Never fetch 400 individual sprites.
+
 **Three taxes to budget for on this route:**
 
 - Fork PRs run with a read-only token and no secrets, so **the bot cannot post the rejection reason** without a two-stage `workflow_run` split.
@@ -53,8 +55,12 @@ A public repo gives steps 1, 2, 4 and 7 for free. Issue forms now take real drag
 
 | | covers | disqualifier |
 |---|---|---|
-| **Payload CMS** | cleanest verified pre-persist gate of any backend. MIT, no seats. | only one auth collection reaches the admin panel, so artists get **no UI at all**. Its own upload validation is mimetype and filesize, so **not one of the six spec fields is expressible in config**. |
+| **Payload CMS** | cleanest verified pre-persist gate of any backend. MIT, no seats. | only one auth collection reaches the admin panel, so artists get **no UI at all**. Its own upload validation is mimetype and filesize, so **not one of the six spec fields is expressible in config**. Also pipes uploads through sharp, which re-encodes: never configure `imageSizes` or `resizeOptions` on the art collection or it silently alters the exact bytes you just validated. |
 | **Directus** | best API, approval workflows, real public read policy | `files.upload` is an **action** event only, never a filter. Docs state the files collection emits no create event on upload. A maintainer answered the blocking question with "I am afraid you can't." |
+
+## Read this before designing anything
+
+**Faithful**, a volunteer Minecraft texture-pack project, is the only place found anywhere in the survey where a slot registry with stable ids, community submission against a specific slot, two-stage review, automatic publication into the shipping pack, and a public manifest API **all coexist**. It is AGPL-3.0, so it is a blueprint to study rather than a dependency to adopt.
 
 ## What to steal from localisation platforms
 
