@@ -1,0 +1,894 @@
+<title>todoFarm</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --soil:#2B1D14; --soil-2:#3B2A1E; --soil-3:#4A3423;
+  --wood-dk:#4A2F1B; --wood:#7A4A26; --wood-lt:#A9713F;
+  --parch:#F6E7C8; --parch-2:#E8D3AC; --parch-3:#D4BC91;
+  --ink:#2A1F17; --ink-2:#6B5238; --ink-3:#9A7C56;
+  --wheat:#E8C170; --wheat-dk:#C69A45;
+  --ember:#E2703A; --ember-dk:#B0491F;
+  --grass:#5C8C3A; --grass-dk:#41692A;
+  --good:#6FA84E; --warn:#D98A3D; --crit:#C4543C; --calm:#5E86A8; --play:#8B6BB0;
+  --f-ui:'Silkscreen','Courier New',monospace;
+  --f-txt:'Pixelify Sans','Trebuchet MS',sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--soil);
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.16) 3px 4px),
+    repeating-linear-gradient(90deg,transparent 0 3px,rgba(255,255,255,.02) 3px 4px);
+  color:var(--parch); font-family:var(--f-txt);
+  margin:0; padding:22px 16px 40px;
+  display:flex; flex-direction:column; align-items:center; gap:18px;
+  -webkit-font-smoothing:none;
+}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+
+.mast{width:100%;max-width:960px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.mast h1{font-family:var(--f-ui);font-size:30px;font-weight:700;margin:0;color:var(--wheat);
+  letter-spacing:1px;text-shadow:0 3px 0 var(--wood-dk),0 4px 0 rgba(0,0,0,.5)}
+.mast .sub{font-size:15px;color:var(--ink-3);max-width:52ch;line-height:1.45;margin:4px 0 0}
+.stamp{font-family:var(--f-ui);font-size:10px;letter-spacing:1.5px;color:var(--soil);
+  background:var(--wheat);padding:5px 9px;box-shadow:0 3px 0 var(--wheat-dk);white-space:nowrap}
+
+.cab{position:relative;padding:10px;max-width:100%;background:var(--wood-dk);
+  box-shadow:0 0 0 4px var(--soil-3),0 10px 0 rgba(0,0,0,.45)}
+.stage{position:relative;background:#000;overflow:hidden}
+#cv{position:absolute;inset:0}
+.ui{position:absolute;top:0;left:0;width:640px;height:416px;pointer-events:none;transform-origin:0 0}
+.ui > *{pointer-events:auto}
+
+.panel{background:var(--wood-dk);padding:4px;box-shadow:0 5px 0 rgba(0,0,0,.45)}
+.panel > .in{background:var(--parch);border:4px solid var(--wood);color:var(--ink);padding:11px 13px}
+
+/* HUD */
+.hud{position:absolute;top:9px;left:9px;display:flex;gap:7px;align-items:stretch;flex-wrap:wrap;max-width:92%}
+.chip{font-family:var(--f-ui);font-size:10px;letter-spacing:.5px;background:var(--wood-dk);color:var(--parch);
+  padding:6px 9px;box-shadow:inset 0 0 0 2px var(--wood-lt),0 3px 0 rgba(0,0,0,.4);display:flex;gap:6px;align-items:center}
+.chip b{color:var(--wheat)}
+.chip.coin b{color:var(--wheat)} .chip.warnfull b{color:var(--warn)}
+.coinico{width:9px;height:9px;background:var(--wheat);box-shadow:inset 0 0 0 1px var(--wheat-dk);border-radius:50%}
+
+/* generic sheet */
+.sheet{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(566px,93%);max-height:86%;
+  display:flex;flex-direction:column}
+.sheet .in{display:flex;flex-direction:column;min-height:0;padding:0}
+.sign{background:var(--wood);color:var(--parch);font-family:var(--f-ui);font-size:12px;letter-spacing:1.5px;
+  padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex:0 0 auto}
+.sign small{font-family:var(--f-ui);font-size:9px;color:var(--wheat);letter-spacing:1px}
+.legend{flex:0 0 auto;display:flex;gap:13px;flex-wrap:wrap;background:var(--parch-2);
+  border-bottom:3px solid var(--wood);padding:6px 12px;font-family:var(--f-ui);font-size:9px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:16px;height:16px;display:block;background:var(--soil-2);background-repeat:no-repeat;
+  background-position:center;background-size:14px 14px;image-rendering:pixelated;box-shadow:inset 0 0 0 2px var(--wood-lt)}
+.body{overflow-y:auto;padding:9px;min-height:0;display:flex;flex-direction:column;gap:5px}
+.body::-webkit-scrollbar{width:10px}
+.body::-webkit-scrollbar-track{background:var(--parch-2)}
+.body::-webkit-scrollbar-thumb{background:var(--wood);box-shadow:inset 0 0 0 2px var(--wood-dk)}
+.foot{flex:0 0 auto;background:var(--parch-2);border-top:4px solid var(--wood);padding:8px 12px;
+  font-family:var(--f-ui);font-size:9px;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px;align-items:center}
+
+/* task rows */
+.slot{display:flex;gap:9px;align-items:center;background:var(--parch-2);padding:6px 8px;box-shadow:inset 0 0 0 2px var(--parch-3)}
+.slot .ico{flex:0 0 auto;width:28px;height:28px;background:var(--soil-2);box-shadow:inset 0 0 0 2px var(--wood-lt);
+  display:grid;place-items:center;font-family:var(--f-ui);font-size:9px;color:var(--wheat);
+  background-repeat:no-repeat;background-position:center;background-size:24px 24px;image-rendering:pixelated}
+.slot .bd{flex:1 1 auto;min-width:0}
+.slot .t{font-size:15px;line-height:1.22;color:var(--ink)}
+.slot .m{font-family:var(--f-ui);font-size:9px;color:var(--ink-3);margin-top:4px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.tag{background:var(--wood);color:var(--parch);padding:2px 5px;letter-spacing:.5px}
+.tag.d{background:var(--calm)} .tag.w{background:var(--warn);color:var(--soil)}
+.tag.p{background:var(--crit)} .tag.g{background:var(--good);color:var(--soil)}
+.tag.e{background:var(--play)} .tag.lock{background:var(--soil-2);color:var(--wheat)}
+.slot.locked{background:repeating-linear-gradient(45deg,var(--parch-2) 0 6px,var(--parch-3) 6px 12px)}
+.slot.locked .t{color:var(--ink-2)}
+.slot.done .t{color:var(--ink-3);text-decoration:line-through}
+.pricebtn{flex:0 0 auto}
+
+/* store grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:7px;padding:9px;overflow-y:auto;min-height:0}
+.card{background:var(--parch-2);box-shadow:inset 0 0 0 2px var(--parch-3);padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.card .art{width:44px;height:44px;background:var(--soil-2);box-shadow:inset 0 0 0 2px var(--wood-lt);
+  background-repeat:no-repeat;background-position:center;background-size:38px 38px;image-rendering:pixelated}
+.card .nm{font-family:var(--f-ui);font-size:9px;color:var(--ink);letter-spacing:.5px;text-align:center;line-height:1.5}
+.card.own{opacity:.55}
+
+/* furnace */
+.furn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(470px,92%)}
+.furn .in{display:flex;gap:13px;align-items:stretch;padding:13px}
+.forge{flex:0 0 auto;width:104px;display:flex;flex-direction:column;gap:7px;align-items:center}
+.forge canvas{width:96px;height:96px;background:var(--soil-2);box-shadow:inset 0 0 0 3px var(--wood-lt)}
+.ring{position:relative;width:104px;height:9px;background:var(--parch-3);box-shadow:inset 0 0 0 2px var(--wood)}
+.ring i{display:block;height:100%;background:var(--ember)}
+.fmeta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:7px}
+.ftask{font-size:17px;line-height:1.25;color:var(--ink)}
+.big{font-family:var(--f-ui);font-size:30px;color:var(--ink);letter-spacing:1px;font-variant-numeric:tabular-nums}
+.maters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--f-ui);font-size:9px;color:var(--ink-2)}
+.tom{width:11px;height:11px;background:var(--crit);box-shadow:inset 0 0 0 1px #8d3527}
+.tom.off{background:var(--parch-3);box-shadow:inset 0 0 0 1px var(--ink-3)}
+
+/* ledger */
+.log{display:flex;flex-direction:column;gap:0}
+.log div{display:flex;gap:8px;padding:6px 4px;border-bottom:2px solid var(--parch-2);font-size:14px;color:var(--ink-2);line-height:1.3}
+.log div:last-child{border-bottom:0}
+.log b{font-family:var(--f-ui);font-size:9px;letter-spacing:.5px;color:var(--parch);background:var(--wood);
+  padding:3px 5px;flex:0 0 auto;height:fit-content;min-width:58px;text-align:center}
+.log b.merge{background:var(--crit)} .log b.rename{background:var(--calm)}
+.log b.tag{background:var(--play)} .log b.locked{background:var(--soil-2);color:var(--wheat)}
+.log em{font-style:normal;color:var(--ink);font-weight:600}
+
+/* capture */
+.cap{position:absolute;left:50%;top:56px;transform:translateX(-50%);width:min(480px,88%)}
+.cap .in{padding:11px 12px}
+.cap label{font-family:var(--f-ui);font-size:9px;letter-spacing:1.5px;color:var(--ink-3);display:block;margin-bottom:7px}
+.cap input{width:100%;font-family:var(--f-txt);font-size:20px;color:var(--ink);
+  background:var(--parch-2);border:3px solid var(--wood);padding:9px 11px;outline:0}
+.cap input:focus{border-color:var(--wheat-dk);background:#fff8e8}
+.cap .hint{font-family:var(--f-ui);font-size:9px;color:var(--ink-3);margin-top:8px;display:flex;justify-content:space-between;gap:10px}
+kbd{font-family:var(--f-ui);font-size:9px;background:var(--wood-dk);color:var(--parch);padding:2px 5px;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+
+/* toast: how a mute AI speaks */
+.toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;flex-direction:column;gap:5px;align-items:center}
+.toast div{font-family:var(--f-ui);font-size:10px;letter-spacing:.5px;background:var(--wood-dk);color:var(--parch);
+  padding:7px 11px;box-shadow:inset 0 0 0 2px var(--wood-lt),0 3px 0 rgba(0,0,0,.45);white-space:nowrap}
+.toast div em{font-style:normal;color:var(--wheat)}
+
+.poke{position:absolute;font-family:var(--f-ui);font-size:10px;letter-spacing:1px;background:var(--wood-dk);
+  color:var(--wheat);padding:5px 8px;transform:translate(-50%,-100%);
+  box-shadow:inset 0 0 0 2px var(--wheat-dk),0 3px 0 rgba(0,0,0,.5);white-space:nowrap}
+.poke:after{content:"";position:absolute;left:50%;bottom:-6px;width:6px;height:6px;margin-left:-3px;background:var(--wood-dk)}
+
+button{font-family:var(--f-ui);font-size:11px;letter-spacing:.5px;cursor:pointer;background:var(--wheat);
+  color:var(--soil);border:0;padding:9px 12px;box-shadow:0 4px 0 var(--wheat-dk);transition:transform .06s,box-shadow .06s}
+button:hover{transform:translateY(1px);box-shadow:0 3px 0 var(--wheat-dk)}
+button:active{transform:translateY(4px);box-shadow:0 0 0 var(--wheat-dk)}
+button:focus-visible{outline:3px solid var(--calm);outline-offset:2px}
+button.ghost{background:var(--parch-2);color:var(--ink-2);box-shadow:0 4px 0 var(--parch-3)}
+button.ghost:hover{box-shadow:0 3px 0 var(--parch-3)}
+button.ghost:active{box-shadow:0 0 0 var(--parch-3)}
+button.sm{font-size:9px;padding:6px 8px;box-shadow:0 3px 0 var(--wheat-dk)}
+button.sm.ghost{box-shadow:0 3px 0 var(--parch-3)}
+button.buy{background:var(--play);color:#fff;box-shadow:0 3px 0 #6b4f8a}
+button:disabled{background:var(--parch-3);color:var(--ink-3);box-shadow:0 3px 0 var(--parch-3);cursor:not-allowed}
+.row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+
+.rail{width:100%;max-width:960px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media (max-width:640px){.rail{grid-template-columns:repeat(2,1fr)}}
+.rail button{background:var(--soil-2);color:var(--ink-3);box-shadow:0 4px 0 #1d130c;font-size:10px;padding:9px 11px;text-align:left}
+.rail button b{display:block;color:var(--parch);font-size:11px;margin-bottom:3px}
+.rail button[aria-current="true"]{background:var(--wood);color:var(--parch-2);box-shadow:0 4px 0 var(--wood-dk)}
+.rail button[aria-current="true"] b{color:var(--wheat)}
+
+.notes{width:100%;max-width:960px;display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:12px}
+.note{background:var(--soil-2);padding:14px 16px;box-shadow:inset 0 0 0 3px var(--soil-3)}
+.note h3{font-family:var(--f-ui);font-size:11px;letter-spacing:1.5px;color:var(--wheat);margin:0 0 9px}
+.note ul{margin:0;padding-left:17px;font-size:14px;line-height:1.5;color:var(--ink-3)}
+.note li{margin-bottom:6px}
+.note li b{color:var(--parch)}
+.note .yes{color:var(--good)} .note .no{color:var(--warn)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="mast">
+  <div>
+    <h1>todoFarm</h1>
+    <p class="sub">Dump a task, a silent classifier files it. Burn it in the furnace, the craftsman forges it into something on your farm. Coins buy decorations, and buy back your own screen time.</p>
+  </div>
+  <div class="stamp">DESIGN MOCKUP &middot; NOT THE APP</div>
+</div>
+
+<div class="cab">
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="ui" id="ui">
+      <div class="hud" id="hud"></div>
+      <div class="poke" id="poke" hidden></div>
+      <div class="toast" id="toast" hidden></div>
+
+      <div class="cap panel" id="cap" hidden><div class="in">
+        <label for="capin">QUICK CAPTURE &middot; <kbd>CMD</kbd> <kbd>SHIFT</kbd> <kbd>SPACE</kbd> FROM ANYWHERE</label>
+        <input id="capin" autocomplete="off" spellcheck="false">
+        <div class="hint"><span id="caphint">NO CATEGORY PICKER. NO PROMPTS. IT JUST GETS FILED.</span><span><kbd>RET</kbd> DROP</span></div>
+      </div></div>
+
+      <div class="sheet panel" id="sheet" hidden><div class="in">
+        <div class="sign"><span id="shName">CHEST</span><small id="shMeta"></small></div>
+        <div class="legend" id="shLegend" hidden></div>
+        <div class="body" id="shBody"></div>
+        <div class="grid" id="shGrid" hidden></div>
+        <div class="foot"><span id="shFoot"></span><span><kbd>ESC</kbd> CLOSE</span></div>
+      </div></div>
+
+      <div class="furn panel" id="furn" hidden><div class="in">
+        <div class="forge">
+          <canvas id="forgeCv" width="96" height="96"></canvas>
+          <div class="ring"><i id="ringFill"></i></div>
+        </div>
+        <div class="fmeta">
+          <div class="sign" style="margin:-13px -13px 0;background:var(--wood)"><span id="fTitle">FURNACE</span><small id="fMode"></small></div>
+          <div class="ftask" id="fTask"></div>
+          <div class="big" id="fClock">25:00</div>
+          <div class="maters" id="fToms"></div>
+          <div class="maters" id="fPay"></div>
+          <div class="row" id="fBtns"></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<div class="rail" id="rail"></div>
+
+<div class="notes">
+  <div class="note">
+    <h3>THE RULES YOU SET</h3>
+    <ul>
+      <li><b>9 chests, hard cap.</b> At 9 the classifier stops creating and starts fitting. It may rename or merge its own chests to make room.</li>
+      <li><b>Your chests are locked.</b> A chest you made by hand can never be renamed, merged, or deleted by the AI. It can only file into it.</li>
+      <li><b>The AI never speaks.</b> No prompts, no approvals, no clarifying questions. It files and it tags. You correct it by dragging.</li>
+      <li><b>One timer, ever.</b> The furnace is the only place work happens.</li>
+    </ul>
+  </div>
+  <div class="note">
+    <h3>THE ECONOMY</h3>
+    <ul>
+      <li><b>12 coins a tomato</b>, plus a <b>50% bonus</b> at 3 tomatoes or more. Long grinds pay better than scattered ones.</li>
+      <li>Finishing a work item also <b>forges a decoration</b> tied to that task. Your farm is a record of what you actually did.</li>
+      <li><b>Leisure costs 1 coin a minute.</b> 30 minutes of Minecraft is 30 coins, about two and a half tomatoes of real work.</li>
+      <li>Coins are only earned in the furnace. Ticking a box without burning time pays nothing.</li>
+    </ul>
+  </div>
+  <div class="note">
+    <h3>STILL FAKED</h3>
+    <ul>
+      <li><b class="no">Every sprite</b> is drawn procedurally so nothing is licensed yet. Ships on a real pack.</li>
+      <li><b class="no">Classification</b> is scripted. Real one is a small flash-class model, swappable, terse JSON out.</li>
+      <li><b class="no">Nothing saves.</b> Real app is SQLite on your Mac.</li>
+      <li><b class="yes">Walking, collision, chest proximity and focus handoff are real.</b> Arrow keys or WASD.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ============================ pixel sprite baker ============================ */
+const bake=(rows,pal)=>{
+  const w=rows[0].length,h=rows.length,c=document.createElement('canvas');
+  c.width=w;c.height=h;const x=c.getContext('2d');
+  for(let r=0;r<h;r++)for(let q=0;q<w;q++){const col=pal[rows[r][q]];if(col){x.fillStyle=col;x.fillRect(q,r,1,1);}}
+  return c;
+};
+const mirror=src=>{const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
+  const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.translate(src.width,0);x.scale(-1,1);x.drawImage(src,0,0);return c;};
+
+const P_HERO={'.':null,h:'#E0B25C',H:'#B98836',s:'#F0C08A',e:'#2A1F17',m:'#C9926A',
+  n:'#5A3A22',b:'#4E7AC7',p:'#5A4632',k:'#33241A'};
+const HERO_D=['................','................','....hhhhhhhh....','...HHHHHHHHHH...',
+'..HHHHHHHHHHHH..','....ssssssss....','....ssesssess...','....ssssssss....',
+'.....smmmms.....','...bbbbbbbbbb...','..sbbbbbbbbbbs..','..sbbbbbbbbbbs..',
+'..ssbbbbbbbbss..','....pppppppp....','....ppp..ppp....','....kk....kk....'];
+const HERO_D2=HERO_D.slice(0,14).concat(['...ppp....ppp...','..kkk......kkk..']);
+const HERO_U=['................','................','....hhhhhhhh....','...HHHHHHHHHH...',
+'..HHHHHHHHHHHH..','....nnnnnnnn....','....nnnnnnnn....','....nnnnnnnn....',
+'.....nnnnnn.....','...bbbbbbbbbb...','..sbbbbbbbbbbs..','..sbbbbbbbbbbs..',
+'..ssbbbbbbbbss..','....pppppppp....','....ppp..ppp....','....kk....kk....'];
+const HERO_U2=HERO_U.slice(0,14).concat(['...ppp....ppp...','..kkk......kkk..']);
+const HERO_R=['................','................','....hhhhhhh.....','...HHHHHHHHH....',
+'..HHHHHHHHHHH...','....sssssss.....','....ssssses.....','....sssssss.....',
+'.....mmmmm......','....bbbbbbbb....','...bbbbbbbbbs...','...bbbbbbbbbs...',
+'....bbbbbbbb....','....pppppppp....','.....pppppp.....','.....kkkkk......'];
+const HERO_R2=HERO_R.slice(0,13).concat(['....pppppppp....','....pppp..pp....','...kkk....kkk...']);
+
+/* the craftsman: headband, beard, leather apron. he never speaks. */
+const P_SMITH={'.':null,b:'#4A3120',r:'#B0491F',s:'#EFBE86',e:'#2A1F17',m:'#B87D5C',
+  t:'#E4D6B8',A:'#8A5429',p:'#4A3423',k:'#2E2118'};
+const SMITH=['................','.....bbbbbb.....','....bbbbbbbb....','...rrrrrrrrrr...',
+'...ssssssssss...','...sseSSSSess...','...ssssssssss...','....ssmmmmss....',
+'....ssbbbbss....','...tttttttttt...','..sttAAAAAAtts..','..sttAAAAAAtts..',
+'...tAAAAAAAAt...','....AAAAAAAA....','....pppppppp....','....kk....kk....'];
+const SMITH_WORK=['................','.....bbbbbb.....','....bbbbbbbb....','...rrrrrrrrrr...',
+'...ssssssssss...','...sseeeeeess...','...ssssssssss...','....ssmmmmss....',
+'....ssbbbbss....','...tttttttttt...','.sttAAAAAAtts...','.sttAAAAAAtts...',
+'...tAAAAAAAAt...','....AAAAAAAA....','....pppppppp....','...kk....kk.....'];
+
+/* props */
+const P_CHEST={'.':null,D:'#3E2513',l:'#B27A44',L:'#8A5429',m:'#E8C170',s:'rgba(0,0,0,.22)',G:'#26150C',g:'#E8C170'};
+const CHEST_C=['................','................','...DDDDDDDDDD...','..DllllllllllD..','..DlLLLLLLLLlD..',
+'..DlLLLLLLLLlD..','..DDDDDDDDDDDD..','..DlLLLLLLLLlD..','..DlLLLLmmLLlD..','..DlLLLLmmLLlD..',
+'..DlLLLLLLLLlD..','..DlLLLLLLLLlD..','..DlLLLLLLLLlD..','..DDDDDDDDDDDD..','...ssssssssss...','................'];
+const CHEST_O=['................','...DDDDDDDDDD...','..DllllllllllD..','..DLLLLLLLLLLD..','..DDDDDDDDDDDD..',
+'................','..DDDDDDDDDDDD..','..DGGGGGGGGGGD..','..DGggggggggGD..','..DGggggggggGD..',
+'..DlLLLLLLLLlD..','..DlLLLLLLLLlD..','..DlLLLLLLLLlD..','..DDDDDDDDDDDD..','...ssssssssss...','................'];
+/* a chest the user made by hand: iron banded, padlocked, AI cannot touch it */
+const P_LOCK={'.':null,D:'#2E2118',l:'#8E9AA8',L:'#5F6B7A',m:'#E8C170',s:'rgba(0,0,0,.22)'};
+const CHEST_L=['................','................','...DDDDDDDDDD...','..DllllllllllD..','..DlLLLLLLLLlD..',
+'..DlLLLLLLLLlD..','..DDDDllllDDDD..','..DlLLDmmmmDLlD.','..DlLLDmmmmDLlD.','..DlLLDDmmDDLlD.',
+'..DlLLLLLLLLlD..','..DlLLLLLLLLlD..','..DlLLLLLLLLlD..','..DDDDDDDDDDDD..','...ssssssssss...','................'];
+
+const P_FURN={'.':null,D:'#2E2118',s:'#6B6560',f:'#E2703A',F:'#F5C86B',x:'#1A100A',w:'rgba(0,0,0,.22)'};
+const FURNACE_OFF=['................','..DDDDDDDDDDDD..','..DssssssssssD..','..DsDDDDDDDDsD..','..DsDxxxxxxDsD..',
+'..DsDxxxxxxDsD..','..DsDxxxxxxDsD..','..DsDDDDDDDDsD..','..DssssssssssD..','..DDDDDDDDDDDD..',
+'..DssssssssssD..','..DDDDDDDDDDDD..','...wwwwwwwwww...','................','................','................'];
+const FURNACE_ON=['................','..DDDDDDDDDDDD..','..DssssssssssD..','..DsDDDDDDDDsD..','..DsDffFFffDsD..',
+'..DsDfFFFFfDsD..','..DsDffFFffDsD..','..DsDDDDDDDDsD..','..DssssssssssD..','..DDDDDDDDDDDD..',
+'..DssssssssssD..','..DDDDDDDDDDDD..','...wwwwwwwwww...','................','................','................'];
+
+const P_TREE={'.':null,c:'#3F6B28',C:'#59913A',t:'#4A3120',T:'#63432B',s:'rgba(0,0,0,.22)'};
+const TREE=['......cccc......','....cccccccc....','...cccCCCCccc...','..ccCCCCCCCCcc..','..cCCCCCCCCCCc..',
+'.ccCCCCCCCCCCcc.','.cCCCCCCCCCCCCc.','.cCCCCCCCCCCCCc.','.ccCCCCCCCCCCcc.','..cCCCCCCCCCCc..',
+'..ccCCCCCCCCcc..','...cccCCCCccc...','....cccccccc....','......tttt......','......tTTt......',
+'......tTTt......','......tTTt......','......tTTt......','......tTTt......','.....ttTTtt.....','....ssssssss....'];
+const P_FEN={'.':null,D:'#6B4526',d:'#4A2F1B'};
+const FENCE=['................','................','................','................','................',
+'................','.......DD.......','.......DD.......','dddddddddddddddd','.......DD.......',
+'dddddddddddddddd','.......DD.......','.......DD.......','.......DD.......','................','................'];
+const FENCE_V=['......dDDd......','......dDDd......','......dDDd......','......dDDd......','......dDDd......',
+'......dDDd......','.....DDDDDD.....','.....DDDDDD.....','......dDDd......','......dDDd......',
+'......dDDd......','......dDDd......','......dDDd......','......dDDd......','......dDDd......','......dDDd......'];
+const P_MAIL={'.':null,M:'#3E2513',m:'#A93F32',R:'#E8C170',p:'#5A3A22',s:'rgba(0,0,0,.22)'};
+const MAIL=['................','...MMMMMMMMMM...','..MmmmmmmmmmM...','..MmRRRRRRRRmM..','..MmmmmmmmmmM...',
+'..MMMMMMMMMMMM..','.......pp.......','.......pp.......','.......pp.......','.......pp.......',
+'.......pp.......','......pppp......','.....ssssss.....','................','................','................'];
+
+/* decorations: bought, or forged from a finished task */
+const P_DEC={'.':null,w:'#E8C170',W:'#C69A45',t:'#4A7A2A',T:'#3F6B28',g:'#59913A',
+  o:'#E07C3E',O:'#B0521F',p:'#D96A6A',P:'#A93F32',c:'#C9A0D8',s:'rgba(0,0,0,.20)',
+  m:'#8E9AA8',M:'#5F6B7A',f:'#F5C86B',b:'#4A3120',u:'#4A7FA5',U:'#6FA3C4'};
+const DEC={
+ sheaf:['................','.......ww.......','......wwww......','.....wwwwww.....','....wwwwwwww....',
+'...wwwwwwwwww...','....wwwwwwww....','.....wwwwww.....','......wwww......','.......WW.......',
+'.......WW.......','.......WW.......','......WWWW......','.....ssssss.....','................','................'],
+ flowers:['................','................','..p...c....p....','.ppp.ccc..ppp...','..p...c....p....',
+'....P...c...P...','..t.t.t.t.t.t...','..t.t.t.t.t.t...','.ttttttttttttt..','..t.t.t.t.t.t...',
+'...ttttttttt....','.....sssss......','................','................','................','................'],
+ pumpkin:['................','.......bb.......','......bttb......','....oooooooo....','...oOooooooOo...',
+'..oOooOooOooOo..','..oOooOooOooOo..','..oOooOooOooOo..','..oOooOooOooOo..','...oOooooooOo...',
+'....oooooooo....','.....ssssss.....','................','................','................','................'],
+ lantern:['................','.......mm.......','......mMMm......','.....MMMMMM.....','....Mffffff M...',
+'....MffffffM....','....MffffffM....','....MffffffM....','.....MMMMMM.....','.......bb.......',
+'.......bb.......','.......bb.......','......bbbb......','.....ssssss.....','................','................'],
+ pond:['................','.....uuuuuu.....','...uuuUUUUuuu...','..uuUUUUUUUUuu..','..uUUUUUUUUUUu..',
+'..uUUUuUUUUUUu..','..uUUUUUUUuUUu..','..uuUUUUUUUUuu..','...uuuUUUUuuu...','.....uuuuuu.....',
+'................','................','................','................','................','................'],
+ statue:['................','......MMMM......','.....MmmmmM.....','.....MmmmmM.....','......MmmM......',
+'.....MMmmMM.....','....MmmmmmmM....','....MmmmmmmM....','....MmmmmmmM....','.....MmmmmM.....',
+'...MMMMMMMMMM...','...MmmmmmmmmM...','...MMMMMMMMMM...','....ssssssss....','................','................'],
+};
+/* item glyphs used in list rows */
+const P_ICO={'.':null,D:'#8A5429',d:'#5A3A22',g:'#59913A',G:'#3F6B28',t:'#4A7A2A',
+  w:'#E8C170',W:'#C69A45',y:'#E8C170',v:'#B08BD8',V:'#7A57A0',s:'rgba(0,0,0,.20)'};
+const ICO={
+ seed:['................','................','................','.......dd.......','......dDDd......',
+'.....dDDDDd.....','.....dDDDDd.....','.....dDDDDd.....','......dDDd......','.......dd.......',
+'................','................','................','................','................','................'],
+ sprout:['................','................','....gg......gg..','...gggg....gggg.','...gggg....gggg.',
+'....gg.tt..gg...','.......tt.......','.......tt.......','.......tt.......','.......tt.......',
+'.....ssssssss...','................','................','................','................','................'],
+ sheaf:['................','................','.......ww.......','......wwww......','.....wwwwww.....',
+'....wwwwwwww....','...wwwwwwwwww...','....wwwwwwww....','.....wwwwww.....','......wwww......',
+'.......WW.......','.......WW.......','.......WW.......','.....ssssss.....','................','................'],
+ play:['................','................','...VVVVVVVVVV...','..VvvvvvvvvvvV..','..VvvvvvvvvvvV..',
+'..Vvvvv..vvvvV..','..Vvvv.vv.vvvV..','..Vvvv.vv.vvvV..','..Vvvvv..vvvvV..','..VvvvvvvvvvvV..',
+'...VVVVVVVVVV...','......V..V......','.....VVVVVV.....','................','................','................'],
+};
+</script>
+<script>
+/* ============================ the farm ============================ */
+const MAP=[
+'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+'T"..........................,T',
+'T.HHHHHH....WWWWWW..SSSSSS..,T',
+'T.HHHHHH....WWWWWW..SSSSSS...T',
+'T.HHHHHH....WWFFWW..SSSSSS...T',
+'T....##.......##......##....,T',
+'T.M..##.......##......##.....T',
+'T....##.......##......##....,T',
+'T....#######################,T',
+'T....##.....................,T',
+'T..ff##fffffffffffffff......,T',
+'T..f...................f....,T',
+'T..f..1....2....3......f.dd.,T',
+'T..f...................f....,T',
+'T..f..4....5....6......f..d.,T',
+'T..f...................f....,T',
+'T..f..7....8....9......f.dd.,T',
+'T..f...................f....,T',
+'T..fffffffffffffffffffff....,T',
+'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'];
+const MW=MAP[0].length, MH=MAP.length, TS=16;
+const SOLID=new Set(['T','f','H','W','S','M','F','d','1','2','3','4','5','6','7','8','9']);
+
+/* ---------------- economy ---------------- */
+const ECON={tomMin:25, coinPerTom:12, bonusAt:3, bonusMul:1.5, leisurePerMin:1};
+const payout=t=>Math.round(ECON.coinPerTom*t*(t>=ECON.bonusAt?ECON.bonusMul:1));
+
+/* ---------------- chests: 9 max, one locked by hand ---------------- */
+const CHESTS={
+ '1':{name:'MORNINGS',hue:'#C9873F',by:'auto',born:'day 2',
+   note:'Renamed from ROUTINE on day 11 when the classifier noticed everything in it fired before 9am.',
+   items:[
+    {t:'Brush teeth',k:'sheaf',tags:[['DAILY','d']],done:true},
+    {t:'Vitamins + creatine',k:'sheaf',tags:[['DAILY','d']],done:true},
+    {t:'Stretch knee, PT set',k:'sheaf',tags:[['DAILY','d']],done:false,est:15},
+    {t:'Make the bed',k:'sheaf',tags:[['DAILY','d']],done:true},
+    {t:'Change the sheets',k:'sprout',tags:[['SUNDAYS','w']],done:false,est:20}]},
+ '2':{name:'THE JOB',hue:'#4E7AC7',by:'auto',born:'day 1',
+   note:'First chest the classifier ever made. It has never been renamed.',
+   items:[
+    {t:'Q3 deck, section 2',k:'sheaf',tags:[['THU','w']],done:false,est:90},
+    {t:'Q3 deck, section 3',k:'sprout',tags:[['NEXT WEEK','']],done:false,est:75},
+    {t:'Review Dana’s migration PR',k:'sheaf',tags:[['TODAY','w']],done:false,est:45},
+    {t:'Book the offsite room',k:'seed',tags:[['NO DATE','']],done:false,est:10},
+    {t:'Kill the old staging cluster',k:'seed',tags:[['NO DATE','']],done:false,est:30}]},
+ '3':{name:'OUT & ABOUT',hue:'#5C8C3A',by:'auto',born:'day 3',
+   note:'Everything filed here has a place attached to it.',
+   items:[
+    {t:'Oat milk',k:'sprout',tags:[['SHOPS','g']],done:false,est:20},
+    {t:'Pick up the knee brace',k:'sprout',tags:[['PHARMACY','g']],done:false,est:20},
+    {t:'Return the blue jacket',k:'sprout',tags:[['BY FRI','w']],done:false,est:25},
+    {t:'Post office, Mom’s parcel',k:'sprout',tags:[['SHOPS','g']],done:false,est:20}]},
+ '4':{name:'KNEE & BODY',hue:'#C4543C',by:'auto',born:'day 9',
+   note:'Split out of MORNINGS on day 9 after four knee items landed in one week.',
+   items:[
+    {t:'Call the clinic about the referral',k:'sheaf',tags:[['6 DAYS OLD','p']],done:false,est:15},
+    {t:'Email Dr. Okafor about the MRI',k:'sprout',tags:[['SENT','']],done:false,est:10},
+    {t:'Book physio #4',k:'sprout',tags:[['AFTER CALL','']],done:false,est:10},
+    {t:'Swim instead of run, Weds',k:'sheaf',tags:[['WEEKLY','w']],done:true}]},
+ '5':{name:'WAITING',hue:'#8B6BB0',by:'auto',born:'day 14',
+   note:'Nothing here is yours to do. It stays visible so it stops rotting.',
+   items:[
+    {t:'Sam, contract redlines',k:'sprout',tags:[['11 DAYS','p']],done:false,est:15},
+    {t:'Landlord, the radiator',k:'sprout',tags:[['4 DAYS','']],done:false,est:10},
+    {t:'Mom, is she coming in Nov?',k:'seed',tags:[['NO DATE','']],done:false,est:10}]},
+ '6':{name:'SCREEN TIME',hue:'#B08BD8',by:'auto',born:'day 6',
+   note:'The classifier built this one on its own after tagging six items in a row as entertainment.',
+   items:[
+    {t:'Play Minecraft',k:'play',ent:true,mins:30,tags:[],done:false},
+    {t:'Finish the Andor season',k:'play',ent:true,mins:45,tags:[],done:false},
+    {t:'Scroll for a bit',k:'play',ent:true,mins:15,tags:[],done:false,unlocked:true},
+    {t:'Watch that F1 doc',k:'play',ent:true,mins:60,tags:[],done:false}]},
+ '7':{name:'GUITAR',hue:'#8E9AA8',by:'you',born:'day 21',locked:true,
+   note:'You made this chest by hand. The classifier can file into it and nothing else. It cannot rename it, merge it, or delete it.',
+   items:[
+    {t:'Learn the Wonderwall intro',k:'sprout',tags:[['YOURS','lock']],done:false,est:30},
+    {t:'Restring the acoustic',k:'seed',tags:[['YOURS','lock']],done:false,est:25},
+    {t:'Practice scales, 10 min',k:'sheaf',tags:[['DAILY','d'],['YOURS','lock']],done:false,est:10},
+    {t:'Watch that Rick Beato video',k:'play',ent:true,mins:25,tags:[['YOURS','lock']],done:false}]},
+ '8':{name:'HOUSE STUFF',hue:'#A9713F',by:'auto',born:'day 29',
+   note:'Newest chest. Its creation is what pushed the farm to 9 of 9 and forced a merge.',
+   items:[
+    {t:'Descale the kettle',k:'seed',tags:[['NO DATE','']],done:false,est:15},
+    {t:'Bin day is Tuesday',k:'sheaf',tags:[['WEEKLY','w']],done:false,est:5},
+    {t:'Fix the wobbly shelf',k:'sprout',tags:[['NO DATE','']],done:false,est:40}]},
+ '9':{name:'SOMEDAY',hue:'#6B5238',by:'auto',born:'day 5',
+   note:'Absorbed READING on day 29. Nothing here is ever pulled into the furnace unless you drag it yourself.',
+   items:[
+    {t:'Repaint the hallway',k:'seed',tags:[['NO DATE','']],done:false,est:180},
+    {t:'That pottery class',k:'seed',tags:[['NO DATE','']],done:false,est:120},
+    {t:'Finish the Le Guin book',k:'seed',tags:[['WAS: READING','']],done:false,est:60},
+    {t:'Reread Dune before the film',k:'seed',tags:[['WAS: READING','']],done:false,est:90}]},
+};
+
+/* ---------------- store: real licensed pixel art, bought with coins ---------------- */
+const STORE=[
+ {n:'FLOWER PATCH',p:40,d:'flowers',own:true},
+ {n:'STONE LANTERN',p:90,d:'lantern',own:true},
+ {n:'PUMPKIN PLOT',p:120,d:'pumpkin',own:false},
+ {n:'KOI POND',p:180,d:'pond',own:false},
+ {n:'STONE STATUE',p:260,d:'statue',own:false},
+ {n:'WHEAT SHEAF',p:0,d:'sheaf',own:true,forged:true},
+];
+
+/* ---------------- what the mute classifier did overnight ---------------- */
+const LEDGER=[
+ {k:'filed',c:'',h:'FILED',b:'<em>oat milk</em> went to OUT &amp; ABOUT. Nine more filed without asking you anything.'},
+ {k:'tag',c:'tag',h:'TAGGED',b:'<em>watch that F1 doc</em> tagged <em>entertainment</em>. Locked until you pay 60 coins.'},
+ {k:'tag',c:'tag',h:'TAGGED',b:'<em>practice scales</em> tagged <em>not entertainment</em>. It is a skill, so it earns instead of costing.'},
+ {k:'new',c:'',h:'BUILT',b:'Made <em>HOUSE STUFF</em> after four home repair items piled up in SOMEDAY.'},
+ {k:'merge',c:'merge',h:'MERGED',b:'That hit 9 of 9. Folded <em>READING</em> into <em>SOMEDAY</em> to stay under the cap. Four items moved, none lost.'},
+ {k:'rename',c:'rename',h:'RENAMED',b:'<em>ROUTINE</em> is now <em>MORNINGS</em>. Everything in it fires before 9am.'},
+ {k:'locked',c:'locked',h:'LEFT ALONE',b:'<em>GUITAR</em> is yours. Filed one item into it and touched nothing else.'},
+ {k:'fit',c:'',h:'NO ROOM',b:'<em>book the dentist</em> had no good home and the cap is full, so it went to the closest fit, <em>KNEE &amp; BODY</em>. Drag it if that is wrong.'},
+];
+</script>
+<script>
+const SPR={},ICO_URL={},DEC_URL={};
+(()=>{
+  SPR.heroD=[bake(HERO_D,P_HERO),bake(HERO_D2,P_HERO)];
+  SPR.heroU=[bake(HERO_U,P_HERO),bake(HERO_U2,P_HERO)];
+  SPR.heroR=[bake(HERO_R,P_HERO),bake(HERO_R2,P_HERO)];
+  SPR.heroL=SPR.heroR.map(mirror);
+  SPR.smith=[bake(SMITH,P_SMITH),bake(SMITH_WORK,P_SMITH)];
+  SPR.chest=bake(CHEST_C,P_CHEST); SPR.chestO=bake(CHEST_O,P_CHEST); SPR.chestL=bake(CHEST_L,P_LOCK);
+  SPR.furnOff=bake(FURNACE_OFF,P_FURN); SPR.furnOn=bake(FURNACE_ON,P_FURN);
+  SPR.tree=bake(TREE,P_TREE); SPR.fence=bake(FENCE,P_FEN); SPR.fenceV=bake(FENCE_V,P_FEN); SPR.mail=bake(MAIL,P_MAIL);
+  for(const k in DEC){SPR['dec_'+k]=bake(DEC[k],P_DEC);DEC_URL[k]=SPR['dec_'+k].toDataURL();}
+  for(const k in ICO)ICO_URL[k]=bake(ICO[k],P_ICO).toDataURL();
+})();
+
+const DECO_AT={'25,12':'sheaf','26,12':'flowers','26,14':'lantern','25,16':'sheaf','26,16':'flowers'};
+
+/* ============================ engine ============================ */
+const VW=20,VH=13,LW=VW*TS,LH=VH*TS;
+const cv=document.getElementById('cv'),cx=cv.getContext('2d');
+const stage=document.getElementById('stage');
+cv.width=LW;cv.height=LH;cx.imageSmoothingEnabled=false;
+let SC=3,UIS=1;
+const fit=()=>{
+  const avail=Math.min(document.documentElement.clientWidth-40,1000);
+  const raw=avail/LW;
+  SC=raw>=2?Math.min(4,Math.floor(raw)):Math.max(1,Math.min(2,raw));
+  const w=Math.round(LW*SC),h=Math.round(LH*SC);
+  stage.style.width=w+'px';stage.style.height=h+'px';cv.style.width=w+'px';cv.style.height=h+'px';
+  UIS=Math.min(1.5,Math.max(.9,SC/2));
+  const ui=document.getElementById('ui');
+  ui.style.width=Math.round(w/UIS)+'px';ui.style.height=Math.round(h/UIS)+'px';
+  ui.style.transform='scale('+UIS+')';
+};
+addEventListener('resize',fit);
+
+const S={day:34,clock:'9:12a',coins:214,toms:3,t:0,
+  px:11*TS+8,py:13*TS,dir:'D',walk:0,moving:false,free:true,
+  smith:{x:15*TS,y:5*TS+14},tint:null,openKey:null,
+  furn:{on:false,mode:'idle',left:0,total:ECON.tomMin*60,done:0,task:null}};
+
+const keys={};
+const typing=()=>{const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA');};
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeAll();return;}
+  if(typing())return;
+  keys[e.key.toLowerCase()]=true;
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault();
+  if(e.key.toLowerCase()==='e'&&near)interact(near);
+});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+
+const tileAt=(tx,ty)=>(ty<0||ty>=MH||tx<0||tx>=MW)?'T':MAP[ty][tx];
+const solidAt=(x,y)=>SOLID.has(tileAt(Math.floor(x/TS),Math.floor(y/TS)));
+const blocked=(x,y)=>solidAt(x-5,y-2)||solidAt(x+4,y-2)||solidAt(x-5,y-6)||solidAt(x+4,y-6);
+
+const OBJ=[];
+for(let ty=0;ty<MH;ty++)for(let tx=0;tx<MW;tx++){
+  const t=MAP[ty][tx];
+  if(t==='T')OBJ.push({s:'tree',x:tx*TS,y:(ty+1)*TS-21,sy:(ty+1)*TS-3});
+  else if(t==='f'){const h=tileAt(tx-1,ty)==='f'||tileAt(tx+1,ty)==='f';
+    OBJ.push({s:h?'fence':'fenceV',x:tx*TS,y:ty*TS,sy:ty*TS+12});}
+  else if(t==='M')OBJ.push({s:'mail',x:tx*TS,y:ty*TS,sy:ty*TS+13});
+  else if(t==='d')OBJ.push({s:'dec_'+(DECO_AT[tx+','+ty]||'flowers'),x:tx*TS,y:ty*TS,sy:ty*TS+13});
+  else if(t>='1'&&t<='9')OBJ.push({s:'chest',k:t,x:tx*TS,y:ty*TS,sy:ty*TS+15});
+}
+OBJ.push({s:'house',x:2*TS,y:2*TS-16,sy:4*TS+15});
+OBJ.push({s:'shop',x:12*TS,y:2*TS-16,sy:4*TS+14});
+OBJ.push({s:'store',x:20*TS,y:2*TS-16,sy:4*TS+15});
+OBJ.push({s:'furn',x:14*TS,y:4*TS-2,sy:4*TS+15});
+
+const box=(x,y,a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h);};
+const drawHouse=(x,y)=>{const r=(a,b,w,h,c)=>box(x,y,a,b,w,h,c);
+  r(0,46,96,18,'rgba(0,0,0,.20)');
+  r(6,26,84,38,'#C9A87C'); r(6,26,84,4,'#E0C39A'); r(6,60,84,4,'#8A6E4A');
+  for(let i=0;i<8;i++)r(8,32+i*4,80,2,'rgba(0,0,0,.05)');
+  for(let i=0;i<9;i++)r(2+i*5,16+i*1.2,92-i*10,6,'#8B3A2E');
+  r(0,22,96,8,'#6E2A20'); r(0,20,96,3,'#A9483A');
+  r(40,40,16,24,'#5A3A22'); r(40,40,16,3,'#7A5232'); r(52,52,2,2,'#E8C170');
+  r(16,34,14,12,'#7FB2CE'); r(16,34,14,2,'#A9D2E6'); r(66,34,14,12,'#7FB2CE'); r(66,34,14,2,'#A9D2E6');
+  r(44,4,8,14,'#7A4A26'); r(43,2,10,4,'#5A3A22');};
+const drawShop=(x,y)=>{const r=(a,b,w,h,c)=>box(x,y,a,b,w,h,c);
+  r(0,46,96,18,'rgba(0,0,0,.22)');
+  r(4,26,88,38,'#7E7A72'); r(4,26,88,4,'#9C978D'); r(4,60,88,4,'#55524C');
+  for(let i=0;i<10;i++)for(let j=0;j<4;j++)r(8+i*8+(j%2?4:0),33+j*7,6,5,'#6C6861');
+  for(let i=0;i<9;i++)r(2+i*5,16+i*1.2,92-i*10,6,'#4A3423');
+  r(0,22,96,8,'#3B2A1E'); r(0,20,96,3,'#6B4526');
+  r(64,4,12,16,'#55524C'); r(63,2,14,4,'#3E3B36');
+  const g=S.furn.on&&S.furn.mode==='work';
+  for(let i=0;i<3;i++)r(66+i*3,-2-i*5,4,4,g?'rgba(226,112,58,.55)':'rgba(180,180,180,.25)');
+  r(34,38,28,26,'#2E2118'); r(34,38,28,3,'#5A3A22');
+  r(38,44,20,16,g?'#E2703A':'#3B2A1E'); if(g)r(41,47,14,10,'#F5C86B');};
+const drawStore=(x,y)=>{const r=(a,b,w,h,c)=>box(x,y,a,b,w,h,c);
+  r(0,48,96,16,'rgba(0,0,0,.20)');
+  r(8,30,80,34,'#B58A5C'); r(8,30,80,3,'#CFA57A'); r(8,61,80,3,'#8A6238');
+  r(4,20,88,12,'#F6E7C8');
+  for(let i=0;i<7;i++)r(4+i*13,20,7,12,'#C4543C');
+  r(4,30,88,3,'#8A3B2C');
+  r(2,32,4,32,'#7A4A26'); r(90,32,4,32,'#7A4A26');
+  r(20,38,56,20,'#8A6238'); r(20,38,56,3,'#A97F4E');
+  r(26,42,10,10,'#E8C170'); r(42,42,10,10,'#B08BD8'); r(58,42,10,10,'#6FA3C4');
+  r(44,10,8,10,'#7A4A26'); r(38,4,20,7,'#E8C170'); r(38,4,20,2,'#C69A45');};
+
+const hash=(a,b)=>((a*73856093)^(b*19349663))>>>0;
+const drawGround=cam=>{
+  const x0=Math.floor(cam.x/TS),y0=Math.floor(cam.y/TS);
+  for(let ty=y0;ty<=y0+VH;ty++)for(let tx=x0;tx<=x0+VW;tx++){
+    const t=tileAt(tx,ty),dx=tx*TS-cam.x,dy=ty*TS-cam.y,h=hash(tx,ty)%100;
+    cx.fillStyle=h<8?'#527F33':h<18?'#649639':'#5C8C3A';
+    cx.fillRect(dx,dy,TS,TS);
+    if(t==='#'){cx.fillStyle='#9C7B4E';cx.fillRect(dx,dy,TS,TS);
+      cx.fillStyle='#8A6B42';for(let i=0;i<5;i++){const k=hash(tx*7+i,ty*13);cx.fillRect(dx+k%14,dy+(k>>4)%14,2,2);}}
+    else if(t==='"'){cx.fillStyle='#78A94E';cx.fillRect(dx+4,dy+7,2,4);cx.fillRect(dx+7,dy+5,2,6);cx.fillRect(dx+10,dy+8,2,3);}
+    else if(t===','){const c=['#D96A6A','#E8C170','#C9A0D8'][hash(tx,ty)%3];
+      cx.fillStyle='#4E7A2F';cx.fillRect(dx+7,dy+9,1,4);cx.fillStyle=c;cx.fillRect(dx+6,dy+6,3,3);}
+  }
+};
+
+let near=null;
+const heroSpr=()=>{const f=S.moving?(S.walk|0)%2:0;
+  return {D:SPR.heroD,U:SPR.heroU,L:SPR.heroL,R:SPR.heroR}[S.dir][f];};
+
+const draw=()=>{
+  const cam={x:Math.max(0,Math.min(MW*TS-LW,Math.round(S.px-LW/2))),
+             y:Math.max(0,Math.min(MH*TS-LH,Math.round(S.py-LH/2)))};
+  cx.fillStyle='#3F6B28';cx.fillRect(0,0,LW,LH);
+  drawGround(cam);
+  const list=OBJ.filter(o=>o.x>cam.x-110&&o.x<cam.x+LW+110&&o.y>cam.y-130&&o.y<cam.y+LH+130);
+  list.push({s:'hero',x:S.px-8,y:S.py-16,sy:S.py});
+  list.push({s:'smith',x:S.smith.x-8,y:S.smith.y-16,sy:S.smith.y});
+  list.sort((a,b)=>a.sy-b.sy);
+  for(const o of list){
+    const dx=Math.round(o.x-cam.x),dy=Math.round(o.y-cam.y);
+    if(o.s==='house'){drawHouse(dx,dy);continue;}
+    if(o.s==='shop'){drawShop(dx,dy);continue;}
+    if(o.s==='store'){drawStore(dx,dy);continue;}
+    if(o.s==='furn'){cx.drawImage(S.furn.on?SPR.furnOn:SPR.furnOff,dx,dy);continue;}
+    if(o.s==='hero'){cx.drawImage(heroSpr(),dx,dy);continue;}
+    if(o.s==='smith'){const w=S.furn.on&&S.furn.mode==='work'&&Math.sin(S.t/9)>0?1:0;
+      cx.drawImage(SPR.smith[w],dx,dy-(w?1:0));continue;}
+    if(o.s==='chest'){
+      const c=CHESTS[o.k];
+      cx.drawImage(S.openKey===o.k?SPR.chestO:(c.locked?SPR.chestL:SPR.chest),dx,dy);
+      cx.font='6px ui-monospace,monospace';cx.textAlign='center';
+      const label=(c.locked?'▪ ':'')+c.name, w=cx.measureText(label).width;
+      cx.fillStyle='#2B1D14';cx.fillRect(dx+8-w/2-4,dy-13,w+8,10);
+      cx.fillStyle=c.hue;cx.fillRect(dx+8-w/2-4,dy-13,w+8,1);
+      cx.fillStyle='#F6E7C8';cx.fillText(label,dx+8,dy-6);cx.textAlign='left';continue;}
+    cx.drawImage(SPR[o.s],dx,dy);
+  }
+  if(S.tint){cx.fillStyle=S.tint;cx.fillRect(0,0,LW,LH);}
+
+  const poke=document.getElementById('poke');near=null;
+  if(S.free&&!S.openKey){
+    const spots=[];
+    for(const o of list)if(o.s==='chest')spots.push({k:o.k,x:o.x+8,y:o.y+14,l:'OPEN '+CHESTS[o.k].name});
+    spots.push({k:'F',x:15*TS,y:5*TS,l:'USE THE FURNACE'});
+    spots.push({k:'S',x:23*TS,y:5*TS,l:'BROWSE THE STORE'});
+    for(const sp of spots)
+      if(Math.abs(sp.x-S.px)<22&&Math.abs(sp.y-S.py)<26){near=sp.k;
+        poke.hidden=false;poke.textContent='[E]  '+sp.l;
+        poke.style.left=(sp.x-cam.x)*(SC/UIS)+'px';poke.style.top=(sp.y-16-cam.y)*(SC/UIS)+'px';break;}
+  }
+  if(!near)poke.hidden=true;
+};
+
+const tick=()=>{
+  S.t++;
+  if(S.furn.on&&S.furn.left>0){S.furn.left-=1/60;if(S.furn.left<0)S.furn.left=0;paintFurn();}
+  if(S.free&&!typing()&&!S.openKey){
+    const sp=1.15;let dx=0,dy=0;
+    if(keys.arrowleft||keys.a)dx-=sp; if(keys.arrowright||keys.d)dx+=sp;
+    if(keys.arrowup||keys.w)dy-=sp;   if(keys.arrowdown||keys.s)dy+=sp;
+    if(dx&&dy){dx*=.72;dy*=.72;}
+    S.moving=!!(dx||dy);
+    if(S.moving){
+      S.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'L':'R'):(dy<0?'U':'D');
+      S.walk+=0.14;
+      if(!blocked(S.px+dx,S.py))S.px+=dx;
+      if(!blocked(S.px,S.py+dy))S.py+=dy;
+    }
+  } else S.moving=false;
+};
+const step=()=>{tick();draw();requestAnimationFrame(step);};
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const fc=$('forgeCv'),fcx=fc.getContext('2d');fcx.imageSmoothingEnabled=false;
+
+const hud=()=>{
+  const n=Object.keys(CHESTS).length;
+  $('hud').innerHTML=
+    `<div class="chip">DAY <b>${S.day}</b></div>`+
+    `<div class="chip">${S.clock}</div>`+
+    `<div class="chip coin"><span class="coinico"></span><b>${S.coins}</b></div>`+
+    `<div class="chip">TODAY <b>${S.toms}</b> 🍅</div>`+
+    `<div class="chip ${n>=9?'warnfull':''}">CHESTS <b>${n}/9</b></div>`;
+};
+let toastT=null;
+const toast=(lines,ms=4200)=>{
+  clearTimeout(toastT);
+  $('toast').innerHTML=lines.map(l=>`<div>${l}</div>`).join('');
+  $('toast').hidden=false;
+  toastT=setTimeout(()=>{$('toast').hidden=true;},ms);
+};
+
+const slotHTML=(it,opts={})=>{
+  const ent=it.ent&&!it.unlocked;
+  const tags=(it.tags||[]).map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('');
+  const ex=it.ent
+    ? `<span class="tag e">ENTERTAINMENT</span>${it.unlocked?'<span class="tag g">PAID FOR</span>':`<span class="tag lock">LOCKED &middot; ${it.mins*ECON.leisurePerMin}c</span>`}`
+    : (it.est?`<span>EST ${it.est}m</span>`:'');
+  const btn=opts.noBtn?'':(it.ent
+    ? (it.unlocked?`<button class="sm ghost pricebtn">CONSUME</button>`
+        :`<button class="sm buy pricebtn"${S.coins<it.mins*ECON.leisurePerMin?' disabled':''}>UNLOCK ${it.mins*ECON.leisurePerMin}c</button>`)
+    : (it.done?'':`<button class="sm pricebtn">FURNACE</button>`));
+  return `<div class="slot${it.done?' done':''}${ent?' locked':''}">
+    <div class="ico" style="background-image:url(${ICO_URL[it.k]||ICO_URL.seed})"></div>
+    <div class="bd"><div class="t">${it.t}</div><div class="m">${tags}${ex}</div></div>${btn}</div>`;
+};
+
+const sheet=o=>{
+  $('sheet').hidden=false;$('poke').hidden=true;S.free=false;
+  $('shName').textContent=o.name; $('shMeta').textContent=o.meta||'';
+  $('shLegend').hidden=!o.legend; if(o.legend)$('shLegend').innerHTML=o.legend;
+  $('shBody').hidden=!!o.grid; $('shGrid').hidden=!o.grid;
+  if(o.grid)$('shGrid').innerHTML=o.grid; else $('shBody').innerHTML=o.body||'';
+  $('shFoot').innerHTML=o.foot||'';
+};
+const closeAll=()=>{
+  if(!$('sheet').hidden){$('sheet').hidden=true;S.openKey=null;S.free=true;return;}
+  if(!$('furn').hidden){$('furn').hidden=true;S.free=true;return;}
+  if(!$('cap').hidden){$('cap').hidden=true;S.free=true;}
+};
+
+const GLYPHS=[['sheaf','DUE NOW'],['sprout','SCHEDULED'],['seed','NO DATE'],['play','ENTERTAINMENT']];
+const glyphLegend=()=>GLYPHS.map(([k,l])=>`<span><i style="background-image:url(${ICO_URL[k]})"></i>${l}</span>`).join('');
+
+function openChest(k){
+  const c=CHESTS[k];if(!c)return;
+  S.openKey=k;
+  const open=c.items.filter(i=>!i.done).length, ents=c.items.filter(i=>i.ent).length;
+  sheet({name:(c.locked?'▪ ':'')+c.name,
+    meta:(c.by==='you'?'MADE BY YOU · LOCKED':'BUILT BY THE CLASSIFIER · '+c.born.toUpperCase()),
+    legend:glyphLegend(),
+    body:c.items.map(i=>slotHTML(i)).join(''),
+    foot:`${open} OPEN · ${ents} ENTERTAINMENT · ${c.note.toUpperCase()}`});
+}
+function openStore(){
+  S.openKey='S';
+  sheet({name:'THE STORE',meta:S.coins+' COINS',
+    grid:STORE.map(s=>`<div class="card${s.own?' own':''}">
+      <div class="art" style="background-image:url(${DEC_URL[s.d]})"></div>
+      <div class="nm">${s.n}</div>
+      ${s.forged?'<button class="sm ghost" disabled>FORGED ONLY</button>'
+        :s.own?'<button class="sm ghost" disabled>PLACED</button>'
+        :`<button class="sm"${S.coins<s.p?' disabled':''}>${s.p}c</button>`}</div>`).join(''),
+    foot:'EVERY DECORATION IS LICENSED PIXEL ART, NOT GENERATED. WHEAT SHEAVES CANNOT BE BOUGHT, ONLY EARNED.'});
+}
+function openLedger(){
+  S.openKey='L';
+  sheet({name:'WORKSHOP LEDGER',meta:'LAST NIGHT · 12 ACTIONS',
+    body:`<div class="log">${LEDGER.map(l=>`<div><b class="${l.c}">${l.h}</b><span>${l.b}</span></div>`).join('')}</div>`,
+    foot:'THE CLASSIFIER NEVER ASKS AND NEVER SPEAKS. THIS IS THE ONLY PLACE IT REPORTS.'});
+}
+
+/* ---------------- the furnace ---------------- */
+const mmss=s=>{s=Math.max(0,Math.round(s));return (s/60|0)+':'+String(s%60).padStart(2,'0');};
+const drawForge=()=>{
+  const g=fcx;g.clearRect(0,0,96,96);
+  g.fillStyle='#3B2A1E';g.fillRect(0,0,96,96);
+  g.fillStyle='#4A3423';g.fillRect(0,78,96,18);
+  const lit=S.furn.on&&S.furn.mode==='work';
+  if(S.furn.mode==='leisure'){
+    /* tv */
+    g.fillStyle='#2E2118';g.fillRect(2,28,42,34);
+    g.fillStyle=Math.sin(S.t/14)>0?'#B08BD8':'#8B6BB0';g.fillRect(7,33,32,24);
+    g.fillStyle='#6B4F8A';g.fillRect(11,37+((S.t/10|0)%14),24,3);
+    g.fillStyle='#2E2118';g.fillRect(18,62,10,6);g.fillRect(10,68,26,4);
+    /* couch, drawn AFTER the smith so his legs tuck behind it */
+    g.fillStyle='#7A4A26';g.fillRect(46,50,48,28);
+    /* chips on the floor, where you can actually see them */
+    g.fillStyle='#C4543C';g.fillRect(26,74,16,12);
+    g.fillStyle='#E8C170';g.fillRect(29,77,10,4);
+    g.fillStyle='#8d3527';g.fillRect(26,74,16,2);
+  } else {
+    g.drawImage(lit?SPR.furnOn:SPR.furnOff,0,0,16,16,4,30,48,48);
+    if(lit)for(let i=0;i<3;i++){const o=(S.t/6+i*7)%24;
+      g.fillStyle='rgba(226,112,58,'+(0.5-o/60)+')';g.fillRect(22+i*4,30-o,3,3);}
+  }
+  if(S.furn.mode==='leisure'){
+    /* seated: draw him first, then the couch front over his legs */
+    g.drawImage(SPR.smith[0],0,0,16,16,50,24,44,44);
+    g.fillStyle='#8A5429';g.fillRect(46,60,48,18);
+    g.fillStyle='#A9713F';g.fillRect(46,60,48,3);
+    g.fillStyle='#5A3A22';g.fillRect(46,76,48,4);
+    g.fillStyle='#8A5429';g.fillRect(88,44,8,34);g.fillStyle='#A9713F';g.fillRect(88,44,8,3);
+  } else {
+    const w=lit&&Math.sin(S.t/9)>0?1:0;
+    g.drawImage(SPR.smith[w],0,0,16,16,48,30+(w?2:0),48,48);
+  }
+};
+const paintFurn=()=>{
+  const f=S.furn;
+  $('fClock').textContent=mmss(f.left);
+  $('ringFill').style.width=(100*(1-f.left/f.total))+'%';
+  $('ringFill').style.background=f.mode==='leisure'?'var(--play)':'var(--ember)';
+  let t='';for(let i=0;i<6;i++)t+=`<span class="tom ${i<f.done?'':'off'}"></span>`;
+  $('fToms').innerHTML=f.mode==='leisure'
+    ? `<span>SPENT ${f.cost} COINS · NOTHING IS EARNED IN HERE, AND THAT IS THE POINT</span>`
+    : t+`<span>${f.done} BANKED · ${ECON.tomMin}m EACH</span>`;
+  drawForge();
+};
+function openFurnace(task,mode){
+  const lei=mode==='leisure';
+  S.furn={on:true,mode,left:lei?task.mins*60-372:702,total:lei?task.mins*60:ECON.tomMin*60,
+    done:lei?0:2,task,cost:lei?task.mins*ECON.leisurePerMin:0};
+  $('furn').hidden=false;$('poke').hidden=true;S.free=false;
+  $('fTitle').textContent=lei?'THE COUCH':'THE FURNACE';
+  $('fMode').textContent=lei?'CONSUMING · PAID FOR':'CRAFTING · ONE AT A TIME';
+  $('fTask').textContent=task.t;
+  const now=payout(S.furn.done), next=payout(S.furn.done+1);
+  $('fPay').innerHTML=lei
+    ? `<span>WHEN THIS ENDS THE CRAFTSMAN GOES BACK TO THE FORGE.</span>`
+    : `<span>FINISH NOW <b style="color:var(--ink)">${now}c</b> &nbsp;·&nbsp; FINISH AT 3 🍅 <b style="color:var(--ink)">${next}c</b> &nbsp;(+50% BONUS)</span>`;
+  $('fBtns').innerHTML=lei
+    ? `<button class="ghost">RACK IT</button>`
+    : `<button>DONE, FORGE IT</button><button class="ghost">RACK IT</button><button class="ghost">${ECON.tomMin}m ▾</button>`;
+  $('fBtns').children[0].onclick=()=>{S.furn.on=false;lei?setScene(1):setScene(5);};
+  if($('fBtns').children[1])$('fBtns').children[1].onclick=()=>{S.furn.on=false;$('furn').hidden=true;S.free=true;
+    toast(['<em>Q3 deck, section 2</em> back on the rack. 2 🍅 banked, nothing lost.']);};
+  paintFurn();
+}
+function interact(k){
+  if(k==='F'){const t=CHESTS['2'].items[0];openFurnace(t,'work');return;}
+  if(k==='S'){openStore();return;}
+  openChest(k);
+}
+$('capin').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.value.trim()){
+    const v=e.target.value.trim();e.target.value='';
+    toast([`<em>${v}</em> filed to <em>OUT &amp; ABOUT</em>`,'tagged <em>not entertainment</em> · no prompt, no approval']);
+    $('caphint').textContent='FILED. YOU WERE NOT ASKED ANYTHING.';
+    setTimeout(()=>$('caphint').textContent='NO CATEGORY PICKER. NO PROMPTS. IT JUST GETS FILED.',2200);
+  }
+});
+
+/* ============================ scenes ============================ */
+const reset=()=>{
+  $('sheet').hidden=true;$('furn').hidden=true;$('cap').hidden=true;$('poke').hidden=true;$('toast').hidden=true;
+  clearTimeout(toastT);
+  S.openKey=null;S.free=true;S.tint=null;S.furn.on=false;S.furn.mode='idle';
+  S.coins=214;S.toms=3;S.clock='9:12a';
+  S.px=11*TS+8;S.py=13*TS;S.smith.x=15*TS;S.smith.y=5*TS+14;
+};
+const SCENES=[
+ {tab:'DUMP',sub:'no prompts, ever',go(){
+   reset();S.px=10*TS;S.py=9*TS+8;S.free=false;
+   $('cap').hidden=false;const i=$('capin');i.value='grab cat food on the way home';
+   setTimeout(()=>{i.focus();i.setSelectionRange(i.value.length,i.value.length);},60);
+ }},
+ {tab:'THE FARM',sub:'9 chests, free walk',go(){
+   reset();S.px=11*TS+8;S.py=13*TS;
+   toast(['Walk with arrow keys or WASD.','Stand next to a chest, the furnace, or the store and press <em>E</em>.'],7000);
+ }},
+ {tab:'A CHEST',sub:'mornings',go(){reset();S.px=7*TS;S.py=12*TS+15;openChest('1');}},
+ {tab:'YOUR CHEST',sub:'locked from the ai',go(){reset();S.px=7*TS;S.py=16*TS+15;openChest('7');}},
+ {tab:'FURNACE',sub:'one timer, ever',go(){
+   reset();S.px=15*TS;S.py=6*TS;openFurnace(CHESTS['2'].items[0],'work');
+ }},
+ {tab:'FORGED',sub:'the payout',go(){
+   reset();S.px=15*TS;S.py=6*TS;S.coins=214+54;S.toms=4;
+   sheet({name:'FORGED',meta:'3 🍅 · 75 MINUTES',
+     body:`<div style="display:flex;gap:13px;align-items:center;padding:4px 2px">
+       <div class="art" style="width:64px;height:64px;flex:0 0 auto;background:var(--soil-2);
+         box-shadow:inset 0 0 0 3px var(--wood-lt);background-image:url(${DEC_URL.sheaf});
+         background-repeat:no-repeat;background-position:center;background-size:56px 56px;image-rendering:pixelated"></div>
+       <div><div style="font-size:17px;color:var(--ink);line-height:1.3">Q3 deck, section 2 is done.</div>
+       <div style="font-size:15px;color:var(--ink-2);margin-top:6px;line-height:1.35">
+       The craftsman forged it into a <b>wheat sheaf</b>. Walk it out and plant it anywhere on the farm.</div></div></div>`
+       +slotHTML({t:'+54 coins',k:'sheaf',tags:[['3 🍅 × 12','g'],['+50% LONG GRIND','g']],done:false},{noBtn:true})
+       +slotHTML({t:'Q3 deck, section 3 is next in THE JOB',k:'sprout',tags:[['NEXT WEEK','']],done:false},{noBtn:true}),
+     foot:'TICKING A BOX WITHOUT BURNING TIME PAYS NOTHING. COINS ONLY COME OUT OF THE FURNACE.'});
+ }},
+ {tab:'THE COUCH',sub:'leisure you paid for',go(){
+   reset();S.px=15*TS;S.py=6*TS;S.coins=214-30;
+   openFurnace({t:'Play Minecraft',mins:30},'leisure');
+ }},
+ {tab:'STORE',sub:'spend the coins',go(){reset();S.px=23*TS;S.py=6*TS;openStore();}},
+ {tab:'LEDGER',sub:'what it did, silently',go(){reset();S.px=11*TS+8;S.py=10*TS;openLedger();}},
+];
+const setScene=i=>{S.scene=i;SCENES[i].go();hud();
+  [...$('rail').children].forEach((b,k)=>b.setAttribute('aria-current',k===i));};
+$('rail').innerHTML=SCENES.map(s=>`<button><b>${s.tab}</b>${s.sub}</button>`).join('');
+[...$('rail').children].forEach((b,i)=>b.onclick=()=>setScene(i));
+
+fit();setScene(1);requestAnimationFrame(step);
+</script>
