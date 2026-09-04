@@ -37,6 +37,8 @@ Roughly 380KB of cited findings in [docs/research/](docs/research/), produced by
 | [art-asset-packs-and-licensing.md](docs/research/art-asset-packs-and-licensing.md) | which packs are commercially safe |
 | [pixel-fonts.md](docs/research/pixel-fonts.md) | font choice, verified against the binaries |
 | [github-as-backend.md](docs/research/github-as-backend.md) | the asset pipeline mechanics, and the CI deadlock it caught |
+| [aseprite-pipeline.md](docs/research/aseprite-pipeline.md) | the Background-layer trap that would have failed every export |
+| [pixel-art-tools.md](docs/research/pixel-art-tools.md) | what to draw in, how to get good, and one licence to avoid |
 
 ## Ground rules
 

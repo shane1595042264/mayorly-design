@@ -2,6 +2,20 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-09-04 (night)
+
+### Every validator failure now names the fix
+**Why:** the founder is a beginner artist. `PNG-32 (colour type 6, RGBA): RGB` is useless; "you have a visible Background layer, Layer menu > Background > Convert to Layer" is actionable. Verified in Aseprite's source: `Sprite::isOpaque()` is `bg && bg->isVisible()`, so a Background layer drops the alpha channel regardless of pixel opacity, and the New Sprite dialog offers one by default. This would have failed his first export.
+
+### Aseprite, $19.99, with Pixelorama as the free fallback
+**Why:** only editor whose PNG writer was verified line by line. Pixelorama passes our validator because it writes an `sRGB` marker and never `iCCP`, and we only reject `iCCP`. **Rejected:** Pyxel Edit (dead since Jan 2022), Procreate (colour profile is mandatory and unchangeable), Photoshop and Krita (anti-aliasing everywhere).
+
+### Do not buy Mana Seed asset packs for this project
+**Why:** its licence bars use "in a project alongside 'AI' generated imagery, writing, code, or anything else". This project is built with an AI coding assistant, so that clause plausibly bars the purchase outright, and it is not limited to art. The first research pass read this as harmless; the fact-checker caught that the quote had been truncated before the load-bearing half. **Kenney, Sprout Lands premium and LimeZu carry no such clause.**
+
+### A duplicate Python validator was deleted on sight
+A research agent wrote `tools/pngcheck_art.py`, a second implementation of the same rules in another language. **Why deleted:** two validators is exactly the drift the vendoring discipline exists to prevent. One file, three runtimes.
+
 ## 2026-09-04 (evening)
 
 ### The assets repo is public
