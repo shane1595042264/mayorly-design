@@ -2,6 +2,20 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-09-04 (evening)
+
+### The assets repo is public
+**Why:** releases and Pages work anonymously so the game build needs no credential, CDNs become available, and every credential stays write-only. **Cost accepted:** every approved PNG is world-visible on merge, and a character reveal is spoiled by a merged PR.
+
+### The workshop is parked until a second artist exists
+**Why:** it removes the git barrier for people without write access. The founder has write access, so for now it adds an OAuth dance and a server to the act of committing to his own repo. It stays built and runnable. **Reverses when:** someone else wants to contribute.
+
+### The game builds on placeholders from day one
+`npm run placeholders` generates magenta checkerboards for every undrawn slot and the manifest includes them flagged. **Why:** otherwise art blocks code and code blocks art. Magenta rather than grey because a plausible placeholder looks deliberate and ships by accident, which is the same reason `#FF00FF` is a rejected colour in real art.
+
+### Four commands are the whole artist interface
+`next`, `scaffold`, `watch`, `sheet`. **Why:** the two failure modes for a solo artist are not knowing what to draw next and drawing at the wrong canvas size. `next` fixes the first, `scaffold` makes the second impossible.
+
 ## 2026-09-04 (later)
 
 ### todoFarm is a project folder of repos, not one repo
@@ -90,8 +104,9 @@ Written as a swappable interface. Small local model versus hosted flash-class mo
 1. **Classifier host.** Local versus hosted. Local means no backend at all, works offline, and "nothing leaves your Mac" is a selling point given documented AI hostility in the pixel and indie audience.
 2. **Wrong entertainment tags have no recovery path.** A bad tag silently charges coins for something useful. Cheapest fix is flipping the tag from the item row.
 3. **Where chests live** now that they are off the farm. Building interior, or their own screen.
-4. **Whether the art repo can be public.** This single answer decides the entire pipeline route. Public gets free CI and anonymous fetch, at the cost of ToS D.5 forking rights over the entire sprite catalogue. Private costs $80/mo at 20 artists and breaks anonymous fetch.
-5. **Where the workshop is hosted**, and whether that runtime can sign an RS256 JWT for the GitHub App. This is a known sharp edge on edge runtimes.
+4. ~~Whether the art repo can be public.~~ **Decided: public.**
+5. **Where the workshop is hosted**, when it is switched on. Deferred with it.
+6. **Whether to collapse the App and OAuth paths into one GitHub App** before the workshop goes live. The research recommends it: an artist token then structurally cannot write to the assets repo, whereas an OAuth App's `public_repo` scope grants write across every public repo that artist can reach.
 
 ## Security note
 
