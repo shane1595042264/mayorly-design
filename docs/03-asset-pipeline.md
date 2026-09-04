@@ -86,7 +86,7 @@ Also worth copying: **Roblox's validation-system docs** are the best available s
 - **Palette:** pack each pixel into a uint32 and put it in a `Set`.
 - **Frames:** integer-divide, then check no frame is blank.
 
-An afternoon plus fixtures. Already implemented and working in [design/workshop.html](../design/workshop.html).
+An afternoon plus fixtures. Already implemented and working in the `workshop/` repo.
 
 **What is actually hard:** artist identity and moderation at scale, storage and CDN, licence provenance, atlas generation, and versioning approved art without breaking shipped builds.
 

@@ -2,6 +2,29 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-09-04 (later)
+
+### todoFarm is a project folder of repos, not one repo
+`design/`, `assets/`, `workshop/`, and later `game/`. **Why:** art has a different cadence, a different contributor set, and different licensing from game code. **Reverses if:** the split creates more cross-repo friction than it removes.
+
+### The validator is one dependency-free file, vendored not duplicated
+Lives in `assets/lib/validate.mjs`, vendored into the workshop with `sync:check` failing the build on drift. **Why:** an artist seeing one verdict in the browser and another on their PR is the worst failure this system can have. **Cost:** a vendoring step. Rejected alternatives: publishing an npm package (too much ceremony for one file), and a submodule (worse ergonomics than a checked sync).
+
+### The workshop has a server, which the original sketch did not
+**Why:** a GitHub write credential cannot live in a browser. The server does exactly two things, holds the credential and re-runs the validator. Everything else is static.
+
+### Git Data API, not the Contents API
+**Why:** a submission is two files (the PNG and the slot JSON) that must land in one commit. Contents writes one file per call, which would produce two commits and a window where the repo is inconsistent.
+
+### CI is read-only so fork PRs work
+Validation needs no secrets. Failure detail goes to the job summary rather than a PR comment. **Why:** this sidesteps the `pull_request_target` footgun entirely. A fork PR cannot comment back, but it does not need to, because the summary and the failing check carry the reason.
+
+### The manifest is checked in CI, not committed by a bot
+**Why:** a bot pushing to a protected branch needs an app token and can retrigger workflows. Requiring the submitter to include a fresh manifest avoids both.
+
+### Twelve slots block the first playable build
+Listed in `assets/slots/` with `"blocks": "v0"`. **Why:** without them the game renders magenta placeholders.
+
 ## 2026-09-04
 
 ### Assets before game
@@ -55,7 +78,8 @@ Written as a swappable interface. Small local model versus hosted flash-class mo
 1. **Classifier host.** Local versus hosted. Local means no backend at all, works offline, and "nothing leaves your Mac" is a selling point given documented AI hostility in the pixel and indie audience.
 2. **Wrong entertainment tags have no recovery path.** A bad tag silently charges coins for something useful. Cheapest fix is flipping the tag from the item row.
 3. **Where chests live** now that they are off the farm. Building interior, or their own screen.
-4. **Whether the art repo can be public.** This single answer decides the entire pipeline route.
+4. **Whether the art repo can be public.** This single answer decides the entire pipeline route. Public gets free CI and anonymous fetch, at the cost of ToS D.5 forking rights over the entire sprite catalogue. Private costs $80/mo at 20 artists and breaks anonymous fetch.
+5. **Where the workshop is hosted**, and whether that runtime can sign an RS256 JWT for the GitHub App. This is a known sharp edge on edge runtimes.
 
 ## Security note
 

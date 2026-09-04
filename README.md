@@ -1,4 +1,6 @@
-# todoFarm
+# todoFarm design
+
+Specs, decisions, research and prototypes. One of several repos under the `todoFarm/` project folder, alongside `assets/` and `workshop/`.
 
 A todo list you walk around in. You dump a task, a silent classifier files it into a chest, and a craftsman turns what you finish into things that decorate your farm.
 
@@ -17,8 +19,8 @@ Pixel art, macOS first. **Design phase, no implementation yet.**
 
 Both are single-file, no build step. Open them in a browser.
 
-- **[design/mockup.html](design/mockup.html)** — the game. Nine scenes. Real walking, tile collision, chest proximity, and canvas-to-HTML focus handoff. Every sprite is drawn procedurally so nothing is licensed yet.
-- **[design/workshop.html](design/workshop.html)** — the asset pipeline. **The PNG validator is real**: it decodes the file and reads pixels, checking canvas size, binary alpha, colour cap, blankness, and animation frames. Nothing uploads; it runs entirely in the browser.
+- **[prototypes/mockup.html](prototypes/mockup.html)** — the game. Nine scenes. Real walking, tile collision, chest proximity, and canvas-to-HTML focus handoff. Every sprite is drawn procedurally so nothing is licensed yet.
+- **[prototypes/workshop.html](prototypes/workshop.html)** — the asset pipeline, now superseded by the real `workshop/` repo. **The PNG validator is real**: it decodes the file and reads pixels, checking canvas size, binary alpha, colour cap, blankness, and animation frames. Nothing uploads; it runs entirely in the browser.
 
 ## Research
 

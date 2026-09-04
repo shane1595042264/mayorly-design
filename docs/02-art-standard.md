@@ -4,7 +4,7 @@
 
 One base unit: the **16x16 tile**. Every canvas is a whole multiple of it, which is what keeps atlas packing, collision, and camera zoom integer. The constraint is what lets a hundred artists produce art that looks like one game.
 
-Live tool with a working validator: [design/workshop.html](../design/workshop.html).
+Live tool with a working validator: the `workshop/` repo.
 
 ## Classes
 
