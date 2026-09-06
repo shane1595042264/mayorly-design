@@ -1,6 +1,6 @@
-# todoFarm design
+# Mayorly design
 
-Specs, decisions, research and prototypes. One of several repos under the `todoFarm/` project folder, alongside `assets/` and `workshop/`.
+Specs, decisions, research and prototypes. One of several repos under the `Mayorly/` project folder, alongside `assets/` and `workshop/`.
 
 A life OS you walk around in. You are the mayor; tasks are journal entries; a mute clerk files them; desk time earns tokens. You dump a task, a silent classifier files it into a chest, and a craftsman turns what you finish into things that decorate your farm.
 

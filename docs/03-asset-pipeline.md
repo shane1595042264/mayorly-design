@@ -96,7 +96,7 @@ The game never browses the workshop. It reads a manifest, and a missing key mean
 
 ```json
 {
-  "standard": "todofarm-art/0.1",
+  "standard": "mayorly-art/0.1",
   "tile": 16,
   "assets": {
     "prop1x1.chest.wooden.closed": {

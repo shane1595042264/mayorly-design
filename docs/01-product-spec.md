@@ -1,4 +1,4 @@
-# todoFarm: product spec
+# Mayorly: product spec
 
 **Status:** design settled, implementation starting. Last updated 2026-09-05. Supersedes the farm-and-chests spec of 2026-09-04; see [04-decisions.md](04-decisions.md).
 
@@ -110,7 +110,7 @@ This is **not in v1**. V1 is the Mayor's Hall, the journal, the clerk, the desk,
 
 - **Open source first.** Monetisation, if any, comes after traction. Nothing in v1 is gated behind payment.
 - **Built for one user first.** The founder uses it daily and polishes until he likes it. Every placeholder is eventually replaced by his own art; every room is designed by him.
-- **The asset pipeline is the content pipeline.** Rooms, decorations, and characters all enter the game the same way: a slot, a brief, a hand-drawn PNG that passes the validator, a manifest entry. See the [assets repo](https://github.com/juntaoli-dev/todofarm-assets).
+- **The asset pipeline is the content pipeline.** Rooms, decorations, and characters all enter the game the same way: a slot, a brief, a hand-drawn PNG that passes the validator, a manifest entry. See the [assets repo](https://github.com/juntaoli-dev/mayorly-assets).
 
 ## What this product refuses to do
 

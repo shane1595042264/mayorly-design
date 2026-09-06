@@ -2,6 +2,11 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-09-05 (name)
+
+### The product is Mayorly
+"todoFarm" already existed and the farm was gone from the fiction anyway. Twelve candidates were checked across GitHub, npm, four domain endings, both app stores, Steam, itch and trademark databases, then four more. **Why Mayorly:** a dictionary word ("in the manner of a mayor") that names the core fantasy, with `mayorly.app` `.io` `.dev`, npm, the GitHub name and every store free and no mark on file. **Rejected with evidence:** Daybook (a 1M-install competitor), Docket (registered US mark for a mobile app), Reeve ("The Reeve" is a town-administration game on every one of our platforms), StarDo (two live productivity apps already use it, and STARDEW VALLEY is an incontestable US mark whose examiner-initiated citations have already killed a third-party filing). Full data in the research archive. Repos renamed `mayorly-*`; old URLs redirect. `tf` stays `tf`.
+
 ## 2026-09-05
 
 ### The Mayor's Hall replaces the farm; ledgers replace chests; tokens replace crops and furniture
@@ -53,7 +58,7 @@ A research agent wrote `tools/pngcheck_art.py`, a second implementation of the s
 
 ## 2026-09-04 (later)
 
-### todoFarm is a project folder of repos, not one repo
+### Mayorly is a project folder of repos, not one repo
 `design/`, `assets/`, `workshop/`, and later `game/`. **Why:** art has a different cadence, a different contributor set, and different licensing from game code. **Reverses if:** the split creates more cross-repo friction than it removes.
 
 ### The validator is one dependency-free file, vendored not duplicated
