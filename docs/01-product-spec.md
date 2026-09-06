@@ -122,6 +122,10 @@ Research found a graveyard of abandoned gamified todo apps and one large control
 - **No guilt as a mechanic.**
 - **An explicit pause exists**, built on purpose.
 
+## A door for mods
+
+Mayorly is standalone and will stay standalone. But the data is the user's, so the app will expose a **local sync API**: read the journal, ledgers and token balance, and post completions. Anyone can build a Stardew Valley mod, a phone widget, or a terminal client against it for free. This is how the Stardew crowd gets Mayorly inside their game without Mayorly becoming a mod. Not v1; designed for from v1 so nothing in the data model assumes a single client.
+
 ## Open questions
 
 1. **Classifier host.** Small local model versus a hosted flash-class model. Written as a swappable interface, not blocking.

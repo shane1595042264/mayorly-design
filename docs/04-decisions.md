@@ -4,6 +4,9 @@ Newest first. Each entry records what was decided, why, and what would reverse i
 
 ## 2026-09-05 (name)
 
+### Standalone app, not a Stardew Valley mod; mods get an API instead
+The founder asked whether to build Mayorly as a SMAPI mod to reuse Stardew's world and assets. **Decided: standalone.** **Why:** a productivity tool has to live on a hotkey and a glance, not behind Steam, a loading screen and a save file; the mod terms forbid every commercial path we have named; SMAPI is desktop only so mobile dies; and the 1.6 update showed a mod inherits the game's breakage schedule. The asset saving is also smaller than it looks, since the hall, ledgers, desk, clerk and journal are new art either way. **What we keep from the idea:** Mayorly will expose a local sync API so anyone can write a Stardew mod, or any other client, against their own data for free. Mods are welcome; the product is not one. **Reverses if:** a fact-check of the legal and technical claims (in flight) overturns them.
+
 ### The product is Mayorly
 "todoFarm" already existed and the farm was gone from the fiction anyway. Twelve candidates were checked across GitHub, npm, four domain endings, both app stores, Steam, itch and trademark databases, then four more. **Why Mayorly:** a dictionary word ("in the manner of a mayor") that names the core fantasy, with `mayorly.app` `.io` `.dev`, npm, the GitHub name and every store free and no mark on file. **Rejected with evidence:** Daybook (a 1M-install competitor), Docket (registered US mark for a mobile app), Reeve ("The Reeve" is a town-administration game on every one of our platforms), StarDo (two live productivity apps already use it, and STARDEW VALLEY is an incontestable US mark whose examiner-initiated citations have already killed a third-party filing). Full data in the research archive. Repos renamed `mayorly-*`; old URLs redirect. `tf` stays `tf`.
 
