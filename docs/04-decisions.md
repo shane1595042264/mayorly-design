@@ -2,6 +2,27 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-09-05
+
+### The Mayor's Hall replaces the farm; ledgers replace chests; tokens replace crops and furniture
+The player is the mayor of a small town and starts in one room, the Mayor's Hall. Tasks are **journal entries**. Categories are **ledgers** on a shelf. The furnace is the mayor's **desk**. The mute craftsman is a mute **clerk**. Completing work earns **tokens only**; there is no crop for ticking and no forged furniture for desk time. Decorations and rooms are bought.
+
+**Why:** the founder's words: a chest item as a todo item "just doesn't make sense, it's not immersive." A journal is what a person running a town would keep; a ledger is what their clerk would file into. The fiction now matches the nouns.
+
+**What did not change:** every rule. Nine-ledger cap, clerk may rename and merge its own, hand-written ledgers are locked, four entries before a ledger is bound, one timer, tokens only from desk time, 12 per tomato with the 3-tomato bonus, leisure at 1 per minute and gated behind tokens, the mute classifier and its log, and every refusal in the anti-guilt list.
+
+**What this unlocks:** rooms as purchasable content. A farm, a kitchen, a tavern, each built first in the assets repo and bought by the player with tokens. The asset pipeline is now the content pipeline, which is why it was built before the game.
+
+**Cost:** six art slots retired (three chests, two furnace states, the craftsman) and their issues closed. Twelve new hall slots opened. The farm tiles already drawn drop to v1 as the first buyable room, nothing is wasted. The farm mockup in `prototypes/` is superseded and not rebuilt; the next design artefact is the game itself.
+
+**Reverses if:** the hall turns out to be less legible than the farm was in play. Unlikely, since the mechanics are identical and only the skin changed.
+
+### The long-term thesis is recorded: a life OS, not a todo list
+Tokens are meant to eventually gate discretionary real-world spending, answering "have I earned it" where a bank balance only answers "can I afford it". **Out of v1 scope on purpose.** Written into the spec so the v1 token economy is designed with the destination in view.
+
+### Open source first, built for one user first
+No payment gates in v1. The founder is the only user until he likes it. Monetisation is a question for after traction.
+
 ## 2026-09-04 (night)
 
 ### Every validator failure now names the fix

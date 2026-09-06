@@ -1,120 +1,130 @@
 # todoFarm: product spec
 
-**Status:** design, pre-implementation. Last updated 2026-09-04.
+**Status:** design settled, implementation starting. Last updated 2026-09-05. Supersedes the farm-and-chests spec of 2026-09-04; see [04-decisions.md](04-decisions.md).
 
 ## One line
 
-A todo list you walk around in. You dump a task, a silent classifier files it, and a craftsman turns what you finish into things that decorate your farm.
+A life OS you walk around in. You are the mayor of a small town. Every task is a journal entry; a silent clerk files it into the right ledger; time at your desk earns tokens; tokens buy your leisure, your decorations, your next room, and eventually gate what you let yourself spend in real life.
+
+## Why the lore changed
+
+The first design was a farm with chests, and a task was an item in a chest. It worked mechanically and it was not immersive. A chest full of "email the dentist" is a spreadsheet wearing a costume. A **journal** is what a person who runs a town would actually keep, and a **ledger** is what their clerk would actually file things into. The nouns now match the fiction.
+
+Nothing mechanical changed. The cap of nine, the locked user-made categories, the mute classifier, the one-timer rule, the token rates, the leisure gate: all identical. Only the world around them moved indoors.
 
 ## Why this is not another gamified todo app
 
-Research across 146 shipping products found the market splits into three clusters that never touch: cozy pixel productivity apps with **zero AI**, LLM desktop characters with **no task management**, and LLM task triage with **no character and no aesthetic**. Full findings in [research/prior-art.md](research/prior-art.md).
+Research across 146 shipping products found the market splits into three clusters that never touch: cozy pixel productivity with **zero AI**, LLM desktop characters with **no task management**, and LLM task triage with **no character and no aesthetic**. Full findings in [research/prior-art.md](research/prior-art.md).
 
 Two things nobody ships:
 
-1. **Paying real coins, earned from real work, to unlock your own leisure.** Not found in any of the 146 products. This is a self-control mechanism, not a decoration, and it cannot be cloned by bolting a chatbot onto Todoist.
-2. **A completion path that produces art.** Every cozy productivity app surveyed is timer-fed. Crops and furniture here are task-fed, and the farm becomes a record of what you actually did.
+1. **Paying tokens, earned from real work, to unlock your own leisure.** Not found in any of the 146. A self-control mechanism, not a decoration.
+2. **A token economy that reaches outside the app.** The long-term thesis (below) is that the same tokens gate discretionary real-world spending. No productivity product does this. It is the reason this is a life OS and not a todo list.
+
+## The world
+
+**You are the mayor.** Not a farmer, not an adventurer. Someone whose job is to keep a town running, which is what a life is.
+
+**You start in one room: the Mayor's Hall.** An office. In it:
+
+| thing | what it is in the fiction | what it is in the app |
+|---|---|---|
+| the **mail tray** | letters arriving on the desk corner | the inbox, where captured entries land unfiled |
+| the **clerk** | a mute records-keeper who files your post | the classifier, embodied and silent |
+| the **ledger shelf** | nine ledgers on a bookshelf | the categories, hard cap nine |
+| a **hand-written ledger** | one you wrote yourself, with a clasp | a user-made category the clerk may never touch |
+| the **desk** | where the mayor sits down to work | the one timer, the only place tokens are earned |
+| the **couch** | where the mayor puts their feet up | where paid-for leisure is consumed |
+| the **door** | leads to rooms the town does not have yet | purchasable content |
+
+**Rooms are content, and content is bought with tokens.** A farm next door. A kitchen. A tavern. Each is a room we build first, with its own art in the assets repo and its own entry in the manifest, and the player buys it. Nothing is generated at runtime, ever; if it is not in the manifest, it does not exist. This is why the asset pipeline came before the game.
+
+The player walks with arrow keys or WASD, with real tile collision. A keyboard shortcut always works without walking, so a three-second capture never costs twenty seconds of walking. The game is the texture, not a tax.
 
 ## The loop
 
 ```
-capture  ->  classify  ->  work  ->  reward  ->  spend
- (you)      (silent AI)   (furnace)  (craftsman)  (store / leisure)
+capture  ->  file  ->  work  ->  tokens  ->  spend
+ (you)     (clerk)    (desk)              (leisure / store / rooms)
 ```
 
 ### 1. Capture
 
-Global hotkey from anywhere in macOS. One text field, no category picker, no date picker, no prompts. Type, hit return, it is gone.
+Global hotkey from anywhere in macOS. One text field, no category picker, no date picker, no prompts. Type, hit return, it lands in the mail tray.
 
-Verified during research: a modifier-combo global hotkey needs **no macOS Accessibility permission**, so capture is promptless. Media keys would trigger the prompt; do not use one.
+A modifier-combo global hotkey needs **no macOS Accessibility permission**, so capture is promptless. Media keys would trigger the prompt; do not use one.
 
-### 2. Classify, silently
+### 2. File, silently
 
-The AI never speaks. No dialogue, no clarifying questions, no approval step. It files and it tags, and you correct it by dragging.
+The clerk never speaks. No dialogue, no clarifying questions, no approval step. It files and it tags, and you correct it by dragging an entry to a different ledger.
 
-**Chest rules**
+**Ledger rules**
 
-- **Hard cap of 9 chests.** At 9 the classifier stops creating and starts fitting to the closest existing chest.
-- The classifier **may rename and merge its own chests** to free a slot.
-- **User-made chests are locked.** It can file into them. It can never rename, merge, or delete them.
-- Every chest carries a written **inclusion criterion**, not just a name. Two chests with names but no criteria are indistinguishable to a classifier; two with criteria are separable.
-- A chest needs **4 or more items before it is born**. Until then items sit unfiled. This is also good game design, since a chest appearing should feel earned.
+- **Hard cap of 9 ledgers.** At 9 the clerk stops creating and starts fitting to the closest existing ledger.
+- The clerk **may rename and merge its own ledgers** to free a slot.
+- **Hand-written ledgers are locked.** The clerk can file into them. It can never rename, merge, or delete them.
+- Every ledger carries a written **inclusion criterion**, not just a name. Two ledgers with names but no criteria are indistinguishable to a classifier; two with criteria are separable.
+- A ledger needs **4 or more entries before it is bound**. Until then entries sit in the tray. A ledger appearing on the shelf should feel earned.
 
-**Two-cadence architecture.** Letting the online classifier create chests is the single mechanism that produces forty near-duplicate chests. So it is split:
+**Two-cadence architecture.** Letting the online classifier create ledgers is the single mechanism that produces forty near-duplicate ledgers. So it is split:
 
-| | runs | model | may create chests |
+| | runs | model | may create ledgers |
 |---|---|---|---|
-| **Induction** | weekly, or when unfiled crosses a threshold | larger | yes, proposes |
-| **Assignment** | per item, batched | small and cheap | **no** |
+| **Induction** | weekly, or when the tray crosses a threshold | larger | yes, proposes |
+| **Assignment** | per entry, batched | small and cheap | **no** |
 
-**Entertainment tagging.** Every item is tagged entertainment or not. The test is whether it provides productive value. Exercise, studying, and work are not entertainment. Playing Minecraft is.
+**Entertainment tagging.** Every entry is tagged entertainment or not. The test is whether it provides productive value. Exercise, studying, and work are not entertainment. Playing Minecraft is.
 
-**The ledger.** Because the AI is mute it needs a channel that is not speech. A workshop ledger records every action it took, in machine-log voice: filed, tagged, built, merged, renamed, left alone, no room. This is the only place it reports.
+**The clerk's log.** Because the clerk is mute it needs a channel that is not speech. A log records every action it took, in machine-log voice: filed, tagged, bound, merged, renamed, left alone, no room. This is the only place it reports.
 
-### 3. Work: the furnace
+### 3. Work: the desk
 
-- **One timer, ever.** The furnace is the only place work happens.
-- Start by dragging an item into it. The craftsman locks in and begins.
-- Interval customisable, 25 minutes default. Each completed interval is one tomato.
-- **Rack it** at any time to pause and switch. Banked tomatoes are kept.
+- **One timer, ever.** The desk is the only place work happens.
+- Sit down with an entry to start. Interval customisable, 25 minutes default. Each completed interval is one tomato.
+- **Get up** at any time to pause and switch. Banked tomatoes are kept.
+- Completing an entry at the desk stamps it. The stamp is the only completion animation; there is no crop and no forged furniture any more.
 
-### 4. Reward: two completion paths
+### 4. Tokens
 
-This is the core distinction and it is what makes the furnace worth using.
+Tokens are earned **only at the desk**. Ticking an entry done without desk time pays nothing, so the timer cannot be skipped. This rule was set in the farm design and is deliberately kept: it is the anti-cheat that makes the economy mean something.
 
-| path | how | yields |
-|---|---|---|
-| **Tick it done** | check it off in the chest, no timer | a **crop** |
-| **Burn it in the furnace** | pomodoro session, then complete | **furniture**, forged by the craftsman |
+- **12 tokens per tomato**, plus **50% bonus at 3 tomatoes or more**. Long grinds beat scattered ones.
+- **Leisure costs 1 token per minute.** 30 minutes of Minecraft is 30 tokens, roughly two and a half tomatoes of real work.
 
-Crops are cheap and plentiful. Furniture is the good stuff and only the furnace produces it.
+### 5. Spend
 
-Each NPC owns a source. This decides which art gets commissioned next.
+Three sinks in v1, one later.
 
-| NPC | produces | ships |
-|---|---|---|
-| craftsman | furniture and fittings | v1 |
-| (none) | crops, from ticked items | v1 |
-| fisherman | fish, tackle, pond dressing | later |
-| treasure hunter | watches, jewellery, curios | later |
+1. **Leisure.** Entertainment entries sit visible but locked in their ledger until paid for. Then they are consumed on the couch: the timer counts down the time you bought, the bar turns purple, and nothing is earned. That is the point.
+2. **The store.** Decorations for the hall, all hand-drawn and licensed, never generated.
+3. **Rooms.** The door in the hall leads to rooms you can buy. Each is real content built in advance.
+4. **Later: real life.** See the thesis.
 
-### 5. Spend: coins
+## The thesis: a life OS
 
-Coins are earned **only in the furnace**. Ticking a box without burning time pays nothing, so the timer cannot be skipped.
+The tokens are a budget for the part of life that a bank balance does not govern. Everyone checks whether they *can* afford something. Almost nobody has a system for whether they *should*, when the thing is discretionary: a game, a gadget, a night out. The intended end state is that a non-necessary real-world purchase costs tokens as well as money, with a record of what was spent on what. The bank account answers "can I"; the ledger answers "have I earned it".
 
-- **12 coins per tomato**, plus **50% bonus at 3 tomatoes or more**. Long grinds beat scattered ones.
-- **Leisure costs 1 coin per minute.** 30 minutes of Minecraft is 30 coins, roughly two and a half tomatoes of real work.
+This is **not in v1**. V1 is the Mayor's Hall, the journal, the clerk, the desk, and the three in-app sinks. The thesis is written down here so that every v1 decision is made with it in view, and so nobody redesigns the token economy later without knowing where it is meant to go.
 
-Two sinks:
+## How this ships
 
-1. **The store.** Decorations, all hand-drawn and licensed, never generated. Crops and forged furniture cannot be bought, only earned, so a farm cannot be faked with coins.
-2. **Unlocking your own entertainment items.** They sit visible but locked in their chest until paid for.
-
-### 6. Leisure
-
-An entertainment item goes into the same furnace panel in a different mode. The craftsman sits on the couch with chips and the TV on, the timer counts down the time you paid for, and the progress bar turns from ember to purple. Nothing is earned in there, and that is the point.
-
-## The world
-
-- Player walks with arrow keys or WASD. Real tile collision.
-- **Chests do not live on the farm.** The farm is purely the reward space: crops, furniture, decorations, and the things you earned. Chests live in their own space.
-- The workshop holds the furnace. The store is a stall.
-- A keyboard shortcut always works without walking, so a three-second capture never costs twenty seconds of walking. The game is the texture, not a tax.
+- **Open source first.** Monetisation, if any, comes after traction. Nothing in v1 is gated behind payment.
+- **Built for one user first.** The founder uses it daily and polishes until he likes it. Every placeholder is eventually replaced by his own art; every room is designed by him.
+- **The asset pipeline is the content pipeline.** Rooms, decorations, and characters all enter the game the same way: a slot, a brief, a hand-drawn PNG that passes the validator, a manifest entry. See the [assets repo](https://github.com/juntaoli-dev/todofarm-assets).
 
 ## What this product refuses to do
 
-Research found a graveyard of abandoned gamified todo apps and one large controlled study on companion-AI manipulation. These are hard invariants, not preferences. Evidence in [research/npc-mood-and-motivation.md](research/npc-mood-and-motivation.md).
+Research found a graveyard of abandoned gamified todo apps and one large controlled study on companion-AI manipulation. These are hard invariants. Evidence in [research/npc-mood-and-motivation.md](research/npc-mood-and-motivation.md).
 
 - **No streaks that break. No wilting. No dying pet.** Nothing decays because you had a bad week.
-- **Unfinished work goes back in the chest.** That is the entire consequence.
-- **No emotional neglect framing, ever.** "I exist solely for you, please do not leave" measurably increases churn, negative word of mouth, and perceived legal liability.
-- **No guilt as a mechanic.** The NPC's state never tracks your worth or your output.
-- **An explicit pause exists**, built on purpose rather than discovered as necessary later.
-
-Growth replaced mood and relationship entirely. The craftsman does not have feelings about your performance. He makes things out of what you finish.
+- **Unfinished entries go back in their ledger.** That is the entire consequence.
+- **No emotional neglect framing, ever.** The clerk does not have feelings about your output.
+- **No guilt as a mechanic.**
+- **An explicit pause exists**, built on purpose.
 
 ## Open questions
 
-1. **Classifier host.** Small local model (free, offline, no backend, nothing leaves the Mac) versus a hosted flash-class model (no download, needs a key and a thin proxy). Written as a swappable interface so this is not blocking.
-2. **Wrong entertainment tags have no recovery path.** With the AI mute and no approval step, a bad tag silently charges coins for something useful. Cheapest fix is flipping the tag from the item row.
-3. Whether chests get their own building interior or their own screen.
+1. **Classifier host.** Small local model versus a hosted flash-class model. Written as a swappable interface, not blocking.
+2. **Wrong entertainment tags have no recovery path.** With the clerk mute and no approval step, a bad tag silently charges tokens for something useful. Cheapest fix is flipping the tag from the entry itself.
+3. **Whether ticking an entry done should pay a small base.** The farm design said no, tokens come only from desk time, and this spec keeps that. Reverse it if the desk turns out to be too much friction for two-minute tasks.
+4. **What the first buyable room is.** The farm is drawn first because its tiles already exist, but a kitchen or tavern may be the better second room. Decide when the hall is playable.
