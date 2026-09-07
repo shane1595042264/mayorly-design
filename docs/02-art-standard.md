@@ -12,7 +12,7 @@ Live tool with a working validator: the `workshop/` repo.
 |---|---|---|---|---|---|
 | `tile` | 16x16 | 1 | top left (0,0) | 16 | ground: grass, dirt, stone, path |
 | `tile.anim` | 16x64 | 4, vertical strip | top left (0,0) | 16 | water, fire, anything that loops |
-| `char` | 64x64 | 16, 4 dirs x 4 frames | feet (8,15) per cell | 24 | player and NPC walk sheets |
+| `char` | 64x128 | 16, 4 dirs x 4 frames of 16x32 | feet (8,31) per cell | 24 | player and NPC walk sheets, two tiles tall like Stardew |
 | `prop1x1` | 16x16 | 1 | bottom centre (8,15) | 20 | chests, lanterns, small decorations |
 | `prop2x2` | 32x32 | 1 | bottom centre (16,31) | 24 | furniture the craftsman forges |
 | `prop2x3` | 32x48 | 1 | bottom centre (16,47) | 24 | tall furniture, shelves, wardrobes |
@@ -30,6 +30,7 @@ Every sprite is drawn from the same imaginary camera: **in front of the object a
 - **Depth reads through light, not geometry.** Key light from the upper left: top surface lightest, front face mid, a one-pixel shadow under the bottom edge and along the right.
 - **Floor tiles are pure top view. Wall tiles are pure front view**, the vertical face of the north wall, which is why plaster only tiles sideways.
 - **Characters face the camera when walking down** and are seen slightly from above, feet on the bottom row of the cell.
+- **Characters are one tile wide and two tiles tall**, 16x32 per cell, the Stardew proportion. Head about a third of the height, the top three rows left clear so hats fit later. Tiles and props stay on the 16px base; only people are tall.
 
 ## Three tiers, not two
 

@@ -2,6 +2,11 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-09-07
+
+### Characters are 16x32, everything else stays on the 16px base
+The founder felt the sprites were too small to put detail into and asked whether to grow them. **Decided: keep the 16px tile, grow only characters to one tile wide by two tall.** **Why:** the tile, icon and prop sizes already match Stardew Valley exactly (16px tiles, 32x32 and 32x48 furniture), so the feeling of tightness there is the medium, not a bug; Stardew's people are 16x32 though, and ours were 16x16, which is Pokemon proportions and leaves no room for a face or a sash. A 32px base was rejected: four times the pixels per sprite, quadrupled walk cycles, and it loses the look the project is chasing. `char` sheets are now 64x128 with the anchor at (8,31) per cell. No character had been drawn, so nothing was invalidated. **Reverses if:** the tall cells fight the room scale once the hall is on screen.
+
 ## 2026-09-05 (name)
 
 ### Standalone app, not a Stardew Valley mod; mods get an API instead
