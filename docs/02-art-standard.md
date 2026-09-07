@@ -16,6 +16,7 @@ Live tool with a working validator: the `workshop/` repo.
 | `prop1x1` | 16x16 | 1 | bottom centre (8,15) | 20 | chests, lanterns, small decorations |
 | `prop2x2` | 32x32 | 1 | bottom centre (16,31) | 24 | furniture the craftsman forges |
 | `prop2x3` | 32x48 | 1 | bottom centre (16,47) | 24 | tall furniture, shelves, wardrobes |
+| `prop2x4` | 32x64 | 1 | bottom centre (16,63) | 24 | showpiece furniture two tiles wide and four tall, the ledger shelf |
 | `icon` | 16x16 | 1 | centre (8,8) | 12 | inventory and list row glyphs |
 | `ui9` | 24x24 | 1 | 8px corners | 8 | nine slice panels and frames |
 | `crop` | 16x64 | 4, vertical strip | bottom centre (8,15) | 16 | 4 stage growth from a ticked task |
@@ -31,6 +32,20 @@ Every sprite is drawn from the same imaginary camera: **in front of the object a
 - **Floor tiles are pure top view. Wall tiles are pure front view**, the vertical face of the north wall, which is why plaster only tiles sideways.
 - **Characters face the camera when walking down** and are seen slightly from above, feet on the bottom row of the cell.
 - **Characters are one tile wide and two tiles tall**, 16x32 per cell, the Stardew proportion. Head about a third of the height, the top three rows left clear so hats fit later. Tiles and props stay on the 16px base; only people are tall.
+
+## Attachment points
+
+Some props are containers the game fills at runtime. The ledger shelf is drawn empty and the game places up to nine `icon.ledger.closed` spines on it. So the shelf's slot file carries `bays`: rectangles, in canvas pixels, that belong to the game.
+
+```
+"bays": { "holds": "icon.ledger.closed", "spine": [6, 13], "perBay": 3,
+          "rects": [[3, 7, 26, 15], [3, 24, 26, 15], [3, 41, 26, 15]] }
+```
+
+- **Inside a bay** the art is a flat back panel: fully opaque, at most 3 colours. The validator blocks on `bays.flat` otherwise, because a placed sprite sitting on top of detail shows that detail around its edges.
+- **Outside the bays, every pixel is the artist's.** Crown, trim, posts, planks, plinth, a candle on top. Want a fatter frame? Shrink the bays in the slot file. Each must stay at least `perBay * spine.w + perBay + 1` wide and `spine.h + 1` tall (22x14 for the shelf), which `bays.fit` checks.
+- **Placement rule the game follows:** spines are laid left to right, bottom aligned to the bay's bottom row, evenly spaced with `gap = floor((w - perBay * spine.w) / (perBay + 1))`. The rects ship in the manifest; the game never hardcodes them.
+- The sketch shows the spines in accent yellow so you can see what the game will put there. Never draw them.
 
 ## Three tiers, not two
 
