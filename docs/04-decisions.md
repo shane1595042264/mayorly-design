@@ -2,6 +2,11 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-10-23
+
+### One token per tomato, no bonus; one token per leisure block
+The 12-per-tomato rate and the 50% bonus at three tomatoes are gone. The bonus rewarded one kind of day (one long sitting) over another, which is not a thing Mayorly should encourage, and the numbers made the balance read like a score. A tomato is a token. Leisure follows: the couch runs on the same focus and rest cadence as a pomodoro, each block of play costs one token as it starts, rests are free, no refunds. The per-minute price went with the 12-rate it was calibrated to. **Where it lives:** `src/core/rules.ts` in mayorly-app, changed in the same breath. **Reverses if:** the balance stops meaning anything because it is too easy to earn; then prices move, not the rate.
+
 ## 2026-09-07
 
 ### The ledger shelf is 32x64 and carries bays the game fills

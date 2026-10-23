@@ -88,8 +88,8 @@ The clerk never speaks. No dialogue, no clarifying questions, no approval step. 
 
 Tokens are earned **only at the desk**. Ticking an entry done without desk time pays nothing, so the timer cannot be skipped. This rule was set in the farm design and is deliberately kept: it is the anti-cheat that makes the economy mean something.
 
-- **12 tokens per tomato**, plus **50% bonus at 3 tomatoes or more**. Long grinds beat scattered ones.
-- **Leisure costs 1 token per minute.** 30 minutes of Minecraft is 30 tokens, roughly two and a half tomatoes of real work.
+- **One token per tomato.** No bonus for long sittings: a scattered day and a long grind pay the same per tomato, and the economy stays stupidly simple.
+- **Leisure costs one token per block.** The couch runs on the same focus and rest cadence as a pomodoro: one token buys one block of play the length of a focus block, rests are free. A tomato of work is a block of Minecraft.
 
 ### 5. Spend
 
