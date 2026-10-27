@@ -4,13 +4,16 @@ Newest first. Each entry records what was decided, why, and what would reverse i
 
 ## 2026-10-26
 
-### Tokens are harvested, not ticked
-A tomato ripened on an entry pays out when the entry is cleared, not when the interval ends: the token is the crop, and a crop is brought in once it has grown. It keeps the desk honest about finishing rather than sitting, and it gives clearing an entry a reward you can hear. Ledger time with no entry pays as it goes, since there is nothing to harvest; a deleted entry forfeits what grew on it. Leisure follows the same shape in reverse: a block of play is charged when it completes, and one left early is free. **Where it lives:** `src/core/rules.ts` and the reducer's `mint` and `completeEntry` in mayorly-app. **Reverses if:** entries that never close pile up unpaid tomatoes; then a cap or an expiry, not a change of principle.
+### The currency is called coins, and the harvest is seen
+Tokens are coins from 2026-10-26 in every word a user reads: the spec, the deck, the record, the harvest line. Code identifiers keep the old name. **Why:** the founder: "sounds like AI tokens". The app now also holds AI provider keys whose usage is measured in tokens, so one Settings tab used the word for two things. Clearing an entry, the moment the economy pays, now shows it: coins fly from the tomato to a counter in the top right of the screen that counts up to the new balance, with a sound, then fade. **Why:** a number changing in a deck nobody has open is no reward; the payout has to be felt where the work was cleared.
+
+### Coins are harvested, not ticked
+A tomato ripened on an entry pays out when the entry is cleared, not when the interval ends: the coin is the crop, and a crop is brought in once it has grown. It keeps the desk honest about finishing rather than sitting, and it gives clearing an entry a reward you can hear. Ledger time with no entry pays as it goes, since there is nothing to harvest; a deleted entry forfeits what grew on it. Leisure follows the same shape in reverse: a block of play is charged when it completes, and one left early is free. **Where it lives:** `src/core/rules.ts` and the reducer's `mint` and `completeEntry` in mayorly-app. **Reverses if:** entries that never close pile up unpaid tomatoes; then a cap or an expiry, not a change of principle.
 
 ## 2026-10-23
 
-### One token per tomato, no bonus; one token per leisure block
-The 12-per-tomato rate and the 50% bonus at three tomatoes are gone. The bonus rewarded one kind of day (one long sitting) over another, which is not a thing Mayorly should encourage, and the numbers made the balance read like a score. A tomato is a token. Leisure follows: the couch runs on the same focus and rest cadence as a pomodoro, each block of play costs one token as it starts, rests are free, no refunds. The per-minute price went with the 12-rate it was calibrated to. **Where it lives:** `src/core/rules.ts` in mayorly-app, changed in the same breath. **Reverses if:** the balance stops meaning anything because it is too easy to earn; then prices move, not the rate.
+### One coin per tomato, no bonus; one coin per leisure block
+The 12-per-tomato rate and the 50% bonus at three tomatoes are gone. The bonus rewarded one kind of day (one long sitting) over another, which is not a thing Mayorly should encourage, and the numbers made the balance read like a score. A tomato is a coin. Leisure follows: the couch runs on the same focus and rest cadence as a pomodoro, each block of play costs one coin as it starts, rests are free, no refunds. The per-minute price went with the 12-rate it was calibrated to. **Where it lives:** `src/core/rules.ts` in mayorly-app, changed in the same breath. **Reverses if:** the balance stops meaning anything because it is too easy to earn; then prices move, not the rate.
 
 ## 2026-09-07
 
@@ -30,21 +33,21 @@ The founder asked whether to build Mayorly as a SMAPI mod to reuse Stardew's wor
 
 ## 2026-09-05
 
-### The Mayor's Hall replaces the farm; ledgers replace chests; tokens replace crops and furniture
-The player is the mayor of a small town and starts in one room, the Mayor's Hall. Tasks are **journal entries**. Categories are **ledgers** on a shelf. The furnace is the mayor's **desk**. The mute craftsman is a mute **clerk**. Completing work earns **tokens only**; there is no crop for ticking and no forged furniture for desk time. Decorations and rooms are bought.
+### The Mayor's Hall replaces the farm; ledgers replace chests; coins replace crops and furniture
+The player is the mayor of a small town and starts in one room, the Mayor's Hall. Tasks are **journal entries**. Categories are **ledgers** on a shelf. The furnace is the mayor's **desk**. The mute craftsman is a mute **clerk**. Completing work earns **coins only**; there is no crop for ticking and no forged furniture for desk time. Decorations and rooms are bought.
 
 **Why:** the founder's words: a chest item as a todo item "just doesn't make sense, it's not immersive." A journal is what a person running a town would keep; a ledger is what their clerk would file into. The fiction now matches the nouns.
 
-**What did not change:** every rule. Nine-ledger cap, clerk may rename and merge its own, hand-written ledgers are locked, four entries before a ledger is bound, one timer, tokens only from desk time, 12 per tomato with the 3-tomato bonus, leisure at 1 per minute and gated behind tokens, the mute classifier and its log, and every refusal in the anti-guilt list.
+**What did not change:** every rule. Nine-ledger cap, clerk may rename and merge its own, hand-written ledgers are locked, four entries before a ledger is bound, one timer, coins only from desk time, 12 per tomato with the 3-tomato bonus, leisure at 1 per minute and gated behind coins, the mute classifier and its log, and every refusal in the anti-guilt list.
 
-**What this unlocks:** rooms as purchasable content. A farm, a kitchen, a tavern, each built first in the assets repo and bought by the player with tokens. The asset pipeline is now the content pipeline, which is why it was built before the game.
+**What this unlocks:** rooms as purchasable content. A farm, a kitchen, a tavern, each built first in the assets repo and bought by the player with coins. The asset pipeline is now the content pipeline, which is why it was built before the game.
 
 **Cost:** six art slots retired (three chests, two furnace states, the craftsman) and their issues closed. Twelve new hall slots opened. The farm tiles already drawn drop to v1 as the first buyable room, nothing is wasted. The farm mockup in `prototypes/` is superseded and not rebuilt; the next design artefact is the game itself.
 
 **Reverses if:** the hall turns out to be less legible than the farm was in play. Unlikely, since the mechanics are identical and only the skin changed.
 
 ### The long-term thesis is recorded: a life OS, not a todo list
-Tokens are meant to eventually gate discretionary real-world spending, answering "have I earned it" where a bank balance only answers "can I afford it". **Out of v1 scope on purpose.** Written into the spec so the v1 token economy is designed with the destination in view.
+Coins are meant to eventually gate discretionary real-world spending, answering "have I earned it" where a bank balance only answers "can I afford it". **Out of v1 scope on purpose.** Written into the spec so the v1 coin economy is designed with the destination in view.
 
 ### Open source first, built for one user first
 No payment gates in v1. The founder is the only user until he likes it. Monetisation is a question for after traction.
