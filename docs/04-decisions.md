@@ -2,6 +2,11 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-10-26
+
+### Tokens are harvested, not ticked
+A tomato ripened on an entry pays out when the entry is cleared, not when the interval ends: the token is the crop, and a crop is brought in once it has grown. It keeps the desk honest about finishing rather than sitting, and it gives clearing an entry a reward you can hear. Ledger time with no entry pays as it goes, since there is nothing to harvest; a deleted entry forfeits what grew on it. Leisure follows the same shape in reverse: a block of play is charged when it completes, and one left early is free. **Where it lives:** `src/core/rules.ts` and the reducer's `mint` and `completeEntry` in mayorly-app. **Reverses if:** entries that never close pile up unpaid tomatoes; then a cap or an expiry, not a change of principle.
+
 ## 2026-10-23
 
 ### One token per tomato, no bonus; one token per leisure block

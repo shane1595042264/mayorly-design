@@ -88,8 +88,8 @@ The clerk never speaks. No dialogue, no clarifying questions, no approval step. 
 
 Tokens are earned **only at the desk**. Ticking an entry done without desk time pays nothing, so the timer cannot be skipped. This rule was set in the farm design and is deliberately kept: it is the anti-cheat that makes the economy mean something.
 
-- **One token per tomato.** No bonus for long sittings: a scattered day and a long grind pay the same per tomato, and the economy stays stupidly simple.
-- **Leisure costs one token per block.** The couch runs on the same focus and rest cadence as a pomodoro: one token buys one block of play the length of a focus block, rests are free. A tomato of work is a block of Minecraft.
+- **One token per tomato, paid at the harvest.** A tomato ripened on an entry is banked on that entry and pays out when the entry is cleared, like a crop you can only bring in once it has grown. Ledger time with no entry pays as it goes, since there is nothing to harvest. A deleted entry forfeits its tomatoes. No bonus for long sittings: a scattered day and a long grind pay the same per tomato.
+- **Leisure costs one token per completed block.** The couch runs on the same focus and rest cadence as a pomodoro: each block of play the length of a focus block costs one token when it completes, rests are free, and a block left early costs nothing. A tomato of work is a block of Minecraft.
 
 ### 5. Spend
 
