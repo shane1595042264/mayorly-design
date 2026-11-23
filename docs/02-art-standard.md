@@ -2,6 +2,8 @@
 
 **All art is hand-drawn, by the founder or by community artists. No AI-generated art, ever.**
 
+Since 2026-11-23 the town is dropped ([decision](04-decisions.md)), so the world classes below (tiles, characters, props) take no new slots. The sprite rules still hold for everything the app shows. The live copy, with the app's own classes (the pet, animated icons, the digit strip), is `STANDARD.md` and `classes.json` in mayorly-assets.
+
 One base unit: the **16x16 tile**. Every canvas is a whole multiple of it, which is what keeps atlas packing, collision, and camera zoom integer. The constraint is what lets a hundred artists produce art that looks like one game.
 
 Live tool with a working validator: the `workshop/` repo.

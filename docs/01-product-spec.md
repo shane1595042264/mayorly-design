@@ -1,6 +1,6 @@
 # Mayorly: product spec
 
-**Status:** design settled, implementation starting. Last updated 2026-09-05. Supersedes the farm-and-chests spec of 2026-09-04; see [04-decisions.md](04-decisions.md).
+**Status:** the world in this spec is retired (2026-11-23): Mayorly is a zero-friction desk for power users, not a town to walk around, and the Mayor's Hall, its rooms, the store and the stamp are not being built. The nouns, the economy and the refusals below still hold, and where the app has moved on (the couch charged from its own time, the market, the trash, a clerk that starts ledgers) the app's CLAUDE.md is the current word. See [04-decisions.md](04-decisions.md). Last updated 2026-09-05; supersedes the farm-and-chests spec of 2026-09-04.
 
 ## One line
 

@@ -2,6 +2,11 @@
 
 Newest first. Each entry records what was decided, why, and what would reverse it.
 
+## 2026-11-23
+
+### Mayorly is a zero-friction desk for power users; the town is dropped
+The walkable Mayor's Hall, the rooms bought with coins, the store of decorations and the "second client on the same core" are all retired. Mayorly is the app that exists: a pet in the corner of the screen, a desk timer, ledgers the clerk files into, a couch that costs coins, and rules that move the desk on their own, so that nothing between you and the work costs a step. **Why:** the founder's words: the audience is a power user who wants to max out productivity, and nobody like that wants a town to spend time looking at and managing. Walking to a desk to start a timer is the opposite of a hotkey. Every request since the app started on 2026-10-09 has removed a step (Alt+Q, capture, the clerk, an AI prompt or a streamer's death or an ad or a League match switching the desk), and the art repo had no commit after 2026-09-07 while the app passed 190. **Kept:** the nouns (ledgers, desk, clerk, couch, coins, tomatoes), the economy (a coin per tomato, the couch charged from its own time, the paid-work ledger), the refusals (no streaks, no decay, no guilt, no dying pet), the art standard's sprite rules (hand-drawn only, Resurrect 64, whole-number scales, the validator), and every sprite already drawn: each gets a place in the app (mayorly-assets README). **Art from now on goes only where it replaces something already on screen and says something at a glance:** the pet's states, the coin in motion, icons for Mayorly's own things. Never a screen or a step of its own. **Rejected:** keeping the Hall as a later client "just in case": it pulled the art toward tiles and walk sheets the app never shows. **Reverses if:** a second audience appears that wants the cozy world, as its own product on the same data.
+
 ## 2026-10-26
 
 ### The currency is called coins, and the harvest is seen

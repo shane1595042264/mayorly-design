@@ -2,9 +2,9 @@
 
 Specs, decisions, research and prototypes. One of several repos under the `Mayorly/` project folder, alongside `assets/` and `workshop/`.
 
-A life OS you walk around in. You are the mayor; tasks are journal entries; a mute clerk files them; desk time earns coins. You dump a task, a silent classifier files it into a chest, and a craftsman turns what you finish into things that decorate your farm.
+A zero-friction desk for people who want to max out their output. Tasks are entries; a mute clerk files them into ledgers; time at the desk earns coins; the couch costs them; and the desk moves on its own when the moment says so (an AI prompt, a streamer's death, an ad, your own League match), so nothing between you and the work costs a step.
 
-Pixel art, macOS first. **Design phase, no implementation yet.**
+**Since 2026-11-23 the walkable town is dropped** ([decision](docs/04-decisions.md)). The app is [mayorly-app](https://github.com/shane1595042264/mayorly-app): Electron and React on Windows and macOS, and an iPhone app, built since 2026-10-09. This repo keeps the decisions, the research and the art standard; the product spec below still describes the Mayor's Hall and is kept as history, with its nouns, economy and refusals still in force.
 
 ## Docs
 
